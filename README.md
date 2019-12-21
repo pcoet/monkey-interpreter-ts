@@ -1,2 +1,2 @@
 # monkey-ts
-A(nother) Monkey implementation in TypeScript
+A(nother) TypeScript implementation of the [Monkey](https://monkeylang.org/) interpreter. 

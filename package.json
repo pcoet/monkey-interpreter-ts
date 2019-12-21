@@ -1,0 +1,31 @@
+{
+  "name": "monkey-interpreter-ts",
+  "version": "1.0.0",
+  "description": "A(nother) TypeScript implementation of the [Monkey](https://monkeylang.org/) interpreter.",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "jest",
+    "lint": "eslint **/*.ts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/pcoet/monkey-interpreter-ts.git"
+  },
+  "author": "pcoet",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/pcoet/monkey-interpreter-ts/issues"
+  },
+  "homepage": "https://github.com/pcoet/monkey-interpreter-ts#readme",
+  "devDependencies": {
+    "@types/jest": "^24.0.24",
+    "@typescript-eslint/eslint-plugin": "^2.12.0",
+    "@typescript-eslint/parser": "^2.12.0",
+    "acorn": "^7.1.0",
+    "eslint": "^6.8.0",
+    "jest": "^24.9.0",
+    "ts-jest": "^24.2.0",
+    "typescript": "^3.7.4"
+  }
+}
