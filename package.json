@@ -4,9 +4,10 @@
   "description": "A(nother) TypeScript implementation of the [Monkey](https://monkeylang.org/) interpreter.",
   "main": "index.js",
   "scripts": {
-    "build": "tsc",
+    "ts-compile": "tsc",
     "test": "jest",
-    "lint": "eslint **/*.ts"
+    "lint": "eslint **/*.ts",
+    "build": "npm run test && npm run lint && npm run ts-compile"
   },
   "repository": {
     "type": "git",
