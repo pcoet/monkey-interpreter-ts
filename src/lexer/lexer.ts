@@ -1,4 +1,4 @@
-import { Token, TokenType, TokenTypes } from '../token/token'
+import { Token, TokenType, TokenTypes, lookUpIdent } from '../token/token'
 
 export interface Lexer {
   input: string;
@@ -35,8 +35,43 @@ export const newLexer = (input: string): Lexer => {
   return l;
 };
 
+const isLetter = (ch: string | null): boolean => {
+  if (!ch) { return false };
+  return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch === '_'; // defines allowed letters in identifiers
+  
+};
+
+const isDigit = (ch: string | null): boolean => {
+  if (!ch) { return false };
+  return '0' <= ch && ch <= '9'; //TODO: confirm that we only support integers, not floats, etc.
+};
+
+const readIdentifier = (l: Lexer): string => {
+  const position = l.position;
+  while (isLetter(l.ch)) {
+    readChar(l);
+  }
+  return l.input.slice(position, l.position);
+}
+
+const skipWhitespace = (l: Lexer) => {
+  while (l.ch === ' ' || l.ch === '\t' || l.ch === '\n' || l.ch === '\r') {
+    readChar(l);
+  }
+};
+
+const readNumber = (l: Lexer): string => {
+  const position = l.position;
+  while (isDigit(l.ch)) {
+    readChar(l);
+  }
+  return l.input.slice(position, l.position);
+};
+
 export const nextToken = (l: Lexer): Token => {
   let tok: Token;
+
+  skipWhitespace(l);
   
   switch (l.ch) {
     case '=':
@@ -70,10 +105,22 @@ export const nextToken = (l: Lexer): Token => {
       };
       break;
     default: {
-      tok = {
-        Type: TokenTypes.EOF,
-        Literal: ''
-      };
+      if (isLetter(l.ch)) {
+        const literal = readIdentifier(l);
+        tok = {
+          Literal: literal,
+          Type: lookUpIdent(literal),
+        }
+        return tok;
+      } else if (isDigit(l.ch)) {
+        tok = {
+          Literal: readNumber(l),
+          Type: TokenTypes.INT,
+        }
+        return tok;
+      } else {
+        tok = newToken(TokenTypes.ILLEGAL, l.ch);
+      }
     }
   }
   readChar(l);

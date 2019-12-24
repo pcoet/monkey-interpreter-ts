@@ -15,3 +15,4 @@ This runs the tests, the linter, and the TypeScript compiler.
 
 * Refactor the following modules to use classes, with helper functions on class:
   * lexer
+  * token - fix naming conventions (e.g. TokenTypes -> TokenType)
