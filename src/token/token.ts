@@ -1,11 +1,11 @@
-export type TokenType = string;
+export type TokType = string;
 
 export interface Token {
-  Type: TokenType;
+  Type: TokType;
   Literal: string;
 }
 
-export enum TokenTypes {
+export enum TokenType {
   ILLEGAL = 'ILLEGAL',
   EOF = 'EOF',
   
@@ -31,11 +31,11 @@ export enum TokenTypes {
 }
 
 const keywords = new Map([
-  ['fn', TokenTypes.FUNCTION],
-  ['let', TokenTypes.LET],
+  ['fn', TokenType.FUNCTION],
+  ['let', TokenType.LET],
 ]);
 
-export const lookUpIdent = (ident: string): TokenTypes => {
+export const lookUpIdent = (ident: string): TokenType => {
   const kw = keywords.get(ident);
-  return kw || TokenTypes.IDENT;
+  return kw || TokenType.IDENT;
 };

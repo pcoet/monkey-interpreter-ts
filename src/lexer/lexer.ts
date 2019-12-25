@@ -1,10 +1,12 @@
-import { Token, TokenType, TokenTypes, lookUpIdent } from '../token/token'
+import { Token, TokenType, lookUpIdent } from '../token/';
+
+export type Char = string;
 
 export class Lexer {
   input: string;
   position: number;
   readPosition: number;
-  ch: null | string;
+  ch: Char | null;
 
   constructor(input: string) {
     this.input = input;
@@ -14,7 +16,7 @@ export class Lexer {
     this.readChar();
   }
 
-  private newToken(tokenType: TokenType, ch: string): Token {
+  private newToken(tokenType: TokenType, ch: Char): Token {
     return {
       Type: tokenType,
       Literal: ch,
@@ -31,12 +33,12 @@ export class Lexer {
     this.readPosition += 1;
   }
 
-  private isLetter(ch: string | null): boolean {
+  private isLetter(ch: Char | null): boolean {
     if (!ch) { return false };
     return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch === '_'; // defines allowed letters in identifiers
   };
 
-  private isDigit(ch: string | null): boolean {
+  private isDigit(ch: Char | null): boolean {
     if (!ch) { return false };
     return '0' <= ch && ch <= '9'; //TODO: confirm that we only support integers, not floats, etc.
   };
@@ -70,32 +72,32 @@ export class Lexer {
     
     switch (this.ch) {
       case '=':
-        tok = this.newToken(TokenTypes.ASSIGN, this.ch);
+        tok = this.newToken(TokenType.ASSIGN, this.ch);
         break;
       case ';':
-        tok = this.newToken(TokenTypes.SEMICOLON, this.ch);
+        tok = this.newToken(TokenType.SEMICOLON, this.ch);
         break;
       case '(':
-        tok = this.newToken(TokenTypes.LPAREN, this.ch);
+        tok = this.newToken(TokenType.LPAREN, this.ch);
         break;
       case ')':
-        tok = this.newToken(TokenTypes.RPAREN, this.ch);
+        tok = this.newToken(TokenType.RPAREN, this.ch);
         break;
       case ',':
-        tok = this.newToken(TokenTypes.COMMA, this.ch);
+        tok = this.newToken(TokenType.COMMA, this.ch);
         break;
       case '+':
-        tok = this.newToken(TokenTypes.PLUS, this.ch);
+        tok = this.newToken(TokenType.PLUS, this.ch);
         break;
       case '{':
-        tok = this.newToken(TokenTypes.LBRACE, this.ch);
+        tok = this.newToken(TokenType.LBRACE, this.ch);
         break;
       case '}':
-        tok = this.newToken(TokenTypes.RBRACE, this.ch);
+        tok = this.newToken(TokenType.RBRACE, this.ch);
         break;
       case null:
         tok = {
-          Type: TokenTypes.EOF,
+          Type: TokenType.EOF,
           Literal: ''
         };
         break;
@@ -110,11 +112,11 @@ export class Lexer {
         } else if (this.isDigit(this.ch)) {
           tok = {
             Literal: this.readNumber(),
-            Type: TokenTypes.INT,
+            Type: TokenType.INT,
           }
           return tok;
         } else {
-          tok = this.newToken(TokenTypes.ILLEGAL, this.ch);
+          tok = this.newToken(TokenType.ILLEGAL, this.ch);
         }
       }
     }
