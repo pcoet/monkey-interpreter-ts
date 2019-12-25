@@ -6,10 +6,14 @@ describe('Lexer', () => {
     const input = `
 let five = 5;
 let ten = 10;
+
 let add = fn(x, y) {
   x + y;
 };
+
 let result = add(five, ten);
+!-/*5;
+5 < 10 > 5;
 `;
     const tests = [
       { expectedType: TokenType.LET, expectedLiteral: 'let' },
@@ -48,6 +52,18 @@ let result = add(five, ten);
       { expectedType: TokenType.IDENT, expectedLiteral: 'ten' },
       { expectedType: TokenType.RPAREN, expectedLiteral: ')' },
       { expectedType: TokenType.SEMICOLON, expectedLiteral: ';' },
+      { expectedType: TokenType.BANG, expectedLiteral: '!' },
+		  { expectedType: TokenType.MINUS, expectedLiteral: '-' },
+		  { expectedType: TokenType.SLASH, expectedLiteral: '/' },
+		  { expectedType: TokenType.ASTERISK, expectedLiteral: '*' },
+		  { expectedType: TokenType.INT, expectedLiteral: '5' },
+		  { expectedType: TokenType.SEMICOLON, expectedLiteral: ';' },
+		  { expectedType: TokenType.INT, expectedLiteral: '5' },
+		  { expectedType: TokenType.LT, expectedLiteral: '<' },
+		  { expectedType: TokenType.INT, expectedLiteral: '10' },
+		  { expectedType: TokenType.GT, expectedLiteral: '>' },
+		  { expectedType: TokenType.INT, expectedLiteral: '5' },
+		  { expectedType: TokenType.SEMICOLON, expectedLiteral: ';' },
       { expectedType: TokenType.EOF, expectedLiteral: '' },
     ];
 

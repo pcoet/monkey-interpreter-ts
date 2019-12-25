@@ -16,6 +16,12 @@ export enum TokenType {
   // Operators
   ASSIGN = '=',
   PLUS = '+',
+  MINUS = '-',
+  BANG = '!',
+  ASTERISK = '*',
+  SLASH    = '/',
+  LT = '<',
+  GT = '>',
 
   // Delimiters
   COMMA = ',',
@@ -27,7 +33,7 @@ export enum TokenType {
 
   // Keywords
   FUNCTION = 'FUNCTION',
-  LET = 'LET'
+  LET = 'LET',
 }
 
 const keywords = new Map([
