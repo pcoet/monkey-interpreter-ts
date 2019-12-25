@@ -1,4 +1,4 @@
-import { newLexer, nextToken } from './lexer';
+import { Lexer } from './lexer';
 import { TokenTypes } from '../token/token'
 
 describe('Lexer', () => {
@@ -51,10 +51,10 @@ let result = add(five, ten);
       { expectedType: TokenTypes.EOF, expectedLiteral: '' },
     ];
 
-    const l = newLexer(input);
+    const l = new Lexer(input);
 
     tests.forEach((testCase) => {
-      const tok = nextToken(l);
+      const tok = l.nextToken();
       expect(tok.Type).toEqual(testCase.expectedType);
       expect(tok.Literal).toEqual(testCase.expectedLiteral);
     });

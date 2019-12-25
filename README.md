@@ -15,4 +15,5 @@ This runs the tests, the linter, and the TypeScript compiler.
 
 * Refactor the following modules to use classes, with helper functions on class:
   * lexer
+    * Consider creating a Char type: https://stackoverflow.com/questions/42678891/typescript-character-type
   * token - fix naming conventions (e.g. TokenTypes -> TokenType)
