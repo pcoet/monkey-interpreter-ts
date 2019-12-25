@@ -30,14 +30,12 @@ export enum TokenTypes {
   LET = 'LET'
 }
 
-// TODO: move keyword literals to a map
+const keywords = new Map([
+  ['fn', TokenTypes.FUNCTION],
+  ['let', TokenTypes.LET],
+]);
+
 export const lookUpIdent = (ident: string): TokenTypes => {
-  switch (ident) {
-    case 'fn': // map 'fn' to 'FUNCTION'
-      return TokenTypes.FUNCTION;
-    case 'let': // map 'let' to 'LET'
-      return TokenTypes.LET;
-    default:
-      return TokenTypes.IDENT;
-  }
+  const kw = keywords.get(ident);
+  return kw || TokenTypes.IDENT;
 };
