@@ -65,6 +65,14 @@ export class Lexer {
     return this.input.slice(position, this.position);
   };
 
+  private peekChar(): Char | null {
+    if (this.readPosition >= this.input.length) {
+      return null;
+    } else {
+      return this.input[this.readPosition]
+    }
+  }
+
   public nextToken(): Token {
     let tok: Token;
   
@@ -72,8 +80,19 @@ export class Lexer {
     
     switch (this.ch) {
       case '=':
-        tok = this.newToken(TokenType.ASSIGN, this.ch);
-        break;
+        if (this.peekChar() === '=') {
+          const ch = this.ch;
+          this.readChar();
+          const literal = `${ch}${this.ch}`;
+          tok = {
+            Literal: literal,
+            Type: TokenType.EQ,
+          }
+          break;
+        } else {
+          tok = this.newToken(TokenType.ASSIGN, this.ch);
+          break;
+        }
       case '+':
         tok = this.newToken(TokenType.PLUS, this.ch);
         break;
@@ -81,8 +100,19 @@ export class Lexer {
         tok = this.newToken(TokenType.MINUS, this.ch);
         break;
       case '!':
-        tok = this.newToken(TokenType.BANG, this.ch);
-        break;
+        if (this.peekChar() === '=') {
+          const ch = this.ch;
+          this.readChar();
+          const literal = `${ch}${this.ch}`;
+          tok = {
+            Literal: literal,
+            Type: TokenType.NOT_EQ,
+          }
+          break;
+        } else {
+          tok = this.newToken(TokenType.BANG, this.ch);
+          break;
+        }
       case '/':
         tok = this.newToken(TokenType.SLASH, this.ch);
         break;

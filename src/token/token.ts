@@ -23,6 +23,10 @@ export enum TokenType {
   LT = '<',
   GT = '>',
 
+  // Two-character operators
+  EQ = '==',
+  NOT_EQ = '!=',
+
   // Delimiters
   COMMA = ',',
   SEMICOLON = ';',
@@ -34,11 +38,21 @@ export enum TokenType {
   // Keywords
   FUNCTION = 'FUNCTION',
   LET = 'LET',
+  TRUE = 'TRUE',
+  FALSE = 'FALSE',
+  IF = 'IF',
+  ELSE = 'ELSE',
+  RETURN = 'RETURN',
 }
 
 const keywords = new Map([
   ['fn', TokenType.FUNCTION],
   ['let', TokenType.LET],
+  ['true', TokenType.TRUE],
+  ['false', TokenType.FALSE],
+  ['if', TokenType.IF],
+  ['else', TokenType.ELSE],
+  ['return', TokenType.RETURN],
 ]);
 
 export const lookUpIdent = (ident: string): TokenType => {
