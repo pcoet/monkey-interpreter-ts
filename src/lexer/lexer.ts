@@ -153,14 +153,14 @@ export class Lexer {
         if (this.isLetter(this.ch)) {
           const literal = this.readIdentifier();
           tok = {
-            Literal: literal,
             Type: lookUpIdent(literal),
+            Literal: literal,
           }
           return tok;
         } else if (this.isDigit(this.ch)) {
           tok = {
-            Literal: this.readNumber(),
             Type: TokenType.INT,
+            Literal: this.readNumber(),
           }
           return tok;
         } else {
