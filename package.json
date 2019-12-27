@@ -8,7 +8,7 @@
     "test": "jest",
     "lint": "eslint **/*.ts",
     "build": "npm run test && npm run lint && npm run ts-compile",
-    "start": "node dist/app.js"
+    "start": "node dist/main.js"
   },
   "repository": {
     "type": "git",
@@ -28,6 +28,8 @@
     "acorn": "^7.1.0",
     "eslint": "^6.8.0",
     "jest": "^24.9.0",
+    "jest-mock-process": "^1.2.0",
+    "mock-stdin": "^1.0.0",
     "ts-jest": "^24.2.0",
     "typescript": "^3.7.4"
   }
