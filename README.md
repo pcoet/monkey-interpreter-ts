@@ -23,4 +23,4 @@ First install and build, the run:
   * lexer
     * Consider creating a Char type: https://stackoverflow.com/questions/42678891/typescript-character-type
   * token - fix naming conventions (e.g. TokenTypes -> TokenType)
-  * main - figure out the best, most idiomatic way to run the compiled app.
+  * repl - figure out how to test this
