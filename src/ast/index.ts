@@ -1,1 +1,1 @@
-export { Expression, Identifier, LetStatement, Program, Statement } from './ast';
+export { Expression, Identifier, LetStatement, Program, ReturnStatement, Statement } from './ast';

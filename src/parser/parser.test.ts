@@ -1,9 +1,9 @@
 import { Parser } from './parser';
-import { LetStatement, Program, Statement, Expression } from '../ast';
+import { LetStatement, ReturnStatement, Statement, Expression } from '../ast';
 import { Lexer } from '../lexer';
 
 describe('Parser', () => {
-  describe('Test let statements', () => {
+  describe('Test LetStatement', () => {
     const t = test;
     const tests = [
       { input: 'let x = 5;', expectedIdentifier: 'x', expectedValue: 5 },
@@ -29,6 +29,30 @@ describe('Parser', () => {
       }
     });
   });
+
+  describe('Test ReturnStatement', () => {
+    const t = test;
+    const tests = [
+      { input: 'return 5;', expectedValue: 5 },
+      { input: 'return 10;', expectedValue: 10 },
+      { input: 'return 993322;', expectedValue: 993322 },
+    ];
+
+    tests.forEach((tt) => {
+      const l = new Lexer(tt.input);
+      const p = new Parser(l);
+      const program = p.ParseProgram();
+      checkParserErrors(p);
+
+      if (program.Statements.length !== 1) {
+        throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
+      }
+
+      const stmt = program.Statements[0];
+      expect(stmt instanceof ReturnStatement).toEqual(true);
+      expect(stmt.TokenLiteral()).toEqual('return');
+    });
+  });
 });
 
 function checkParserErrors(p: Parser): void {  
@@ -46,8 +70,8 @@ function checkParserErrors(p: Parser): void {
 
 function testLetStatement(t: jest.It, s: Statement, name: string): void {
   t('test let statement', () => {
-    expect(s.TokenLiteral()).toEqual('let'); // 1) token literal is set to 'let'
-    expect(s instanceof LetStatement && !!s.Name).toEqual(true); // 2) s is a LetStatement
+    expect(s.TokenLiteral()).toEqual('let');
+    expect(s instanceof LetStatement && !!s.Name).toEqual(true);
     if (s instanceof LetStatement && !!s.Name) {
       expect(s.Name.Value).toEqual(name);
       expect(s.Name.TokenLiteral()).toEqual(name);

@@ -59,3 +59,19 @@ export class LetStatement implements Statement {
     return this.Token.Literal;
   }
 }
+
+export class ReturnStatement implements Statement {
+  public Token: Token;
+  public ReturnValue: Expression | undefined;
+
+  constructor(token: Token, returnValue?: Expression) {
+    this.Token = token;
+    this.ReturnValue = returnValue;
+  }
+
+  statementNode() {}
+
+  public TokenLiteral(): string {
+    return this.Token.Literal;
+  }
+}

@@ -1,5 +1,5 @@
 import { Lexer } from '../lexer';
-import { Identifier, LetStatement, Program, Statement } from '../ast';
+import { Identifier, LetStatement, Program, Statement, ReturnStatement } from '../ast';
 import { Token, TokenType } from '../token';
 
 export class Parser {
@@ -44,7 +44,9 @@ export class Parser {
     }
     switch (this.curToken.Type) {
       case TokenType.LET:
-        return this.parseLetStatement()
+        return this.parseLetStatement();
+      case TokenType.RETURN:
+        return this.parseReturnStatement();
       default:
         return null;
     }
@@ -72,6 +74,21 @@ export class Parser {
       this.nextToken();
     }
     
+    return stmt;
+  }
+
+  parseReturnStatement(): ReturnStatement | null {
+    if (!this.curToken) {
+      return null;
+    }
+    
+    const stmt = new ReturnStatement(this.curToken);
+    this.nextToken();
+
+    // TODO: We're skipping the expressions until we // encounter a semicolon
+    while (!this.curTokenIs(TokenType.SEMICOLON)) {
+      this.nextToken();
+    }
     return stmt;
   }
 
