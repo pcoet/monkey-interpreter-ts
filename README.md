@@ -17,6 +17,8 @@ First install and build, the run:
 
     npm start
 
+As an example, you can use this input: `let add = fn(x, y) { x + y; };`
+
 ## TODOs
 
 * Refactor the following modules to use classes, with helper functions on class:
@@ -24,3 +26,4 @@ First install and build, the run:
     * Consider creating a Char type: https://stackoverflow.com/questions/42678891/typescript-character-type
   * token - fix naming conventions (e.g. TokenTypes -> TokenType)
   * repl - figure out how to test this
+* Refactor 'Let statements' test in parser.test.ts to match parser_test.go.

@@ -1,14 +1,14 @@
 import { Token } from '../token';
 
-interface Node {
+export interface Node {
   TokenLiteral: () => string;
 }
 
-interface Statement extends Node {
+export interface Statement extends Node {
   statementNode: () => void;
 }
 
-interface Expression extends Node {
+export interface Expression extends Node {
   expressionNode: () => void;
 }
 
@@ -27,7 +27,7 @@ export class Program {
   }
 }
 
-class Identifier implements Expression {
+export class Identifier implements Expression {
   Token: Token; // the token.IDENT token
   Value: string;
 
@@ -42,19 +42,20 @@ class Identifier implements Expression {
   }
 }
 
-class LetStatement implements Statement {
-  Token: Token;
-  Name: Identifier;
-  Value: Expression;
+export class LetStatement implements Statement {
+  public Token: Token;
+  public Name: Identifier | undefined;
+  public Value: Expression | undefined;
 
-  constructor(token: Token, name: Identifier, value: Expression) {
+  constructor(token: Token, name?: Identifier, value?: Expression) {
     this.Token = token;
     this.Name = name;
     this.Value = value;
   }
 
   statementNode() {}
-  TokenLiteral(): string {
+
+  public TokenLiteral(): string {
     return this.Token.Literal;
   }
 }
