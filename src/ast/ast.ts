@@ -2,6 +2,7 @@ import { Token } from '../token';
 
 export interface Node {
   TokenLiteral: () => string;
+  String: () => string;
 }
 
 export interface Statement extends Node {
@@ -12,7 +13,7 @@ export interface Expression extends Node {
   expressionNode: () => void;
 }
 
-export class Program {
+export class Program implements Node {
   Statements: Statement[];
 
   constructor(statements: Statement[]) {
@@ -24,6 +25,14 @@ export class Program {
       return this.Statements[0].TokenLiteral()
     } else {
       return "" }
+  }
+
+  String(): string {
+    let out = '';
+    this.Statements.forEach((s) => {
+      out += s.String();
+    });
+    return out;
   }
 }
 
@@ -39,6 +48,10 @@ export class Identifier implements Expression {
   expressionNode() {}
   TokenLiteral(): string { 
     return this.Token.Literal;
+  }
+
+  String(): string {
+    return this.Value;
   }
 }
 
@@ -58,6 +71,20 @@ export class LetStatement implements Statement {
   public TokenLiteral(): string {
     return this.Token.Literal;
   }
+
+  String(): string {
+    let out = '';
+    const Name = this.Name ? this.Name.String() : '';
+    out += `${this.TokenLiteral()} `;
+    out += `${Name} = `;
+
+    if (this.Value) {
+      out += this.Value.String();
+    }
+
+    out += ';';
+    return out;
+  }
 }
 
 export class ReturnStatement implements Statement {
@@ -73,5 +100,40 @@ export class ReturnStatement implements Statement {
 
   public TokenLiteral(): string {
     return this.Token.Literal;
+  }
+
+  String(): string {
+    let out = '';
+    out += `${this.TokenLiteral() }`;
+
+    if (this.ReturnValue) {
+      out += this.ReturnValue.String();
+    }
+
+    out += ';';
+    return out;
+  }
+}
+
+export class ExpressionStatement implements Statement {
+  public Token: Token;
+  public Expression: Expression | undefined;
+
+  constructor(token: Token, expression?: Expression) {
+    this.Token = token;
+    this.Expression = expression;
+  }
+
+  statementNode() {}
+
+  public TokenLiteral(): string {
+    return this.Token.Literal;
+  }
+
+  String(): string {
+    if (this.Expression) {
+      return this.Expression.String();
+    }
+    return '';
   }
 }
