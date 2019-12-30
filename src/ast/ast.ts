@@ -137,3 +137,26 @@ export class ExpressionStatement implements Statement {
     return '';
   }
 }
+
+export class IntegerLiteral implements Expression {
+  public Token: Token;
+  public Value: number | undefined;
+
+  constructor(token: Token, value?: number) {
+    this.Token = token;
+    this.Value = value;
+  }
+
+  expressionNode() {}
+
+  public TokenLiteral(): string {
+    return this.Token.Literal;
+  }
+
+  String(): string {
+    if (this.Token) {
+      return this.Token.Literal;
+    }
+    return '';
+  }
+}

@@ -1,5 +1,13 @@
 import { Parser } from './parser';
-import { ExpressionStatement, LetStatement, ReturnStatement, Statement, Expression, Identifier } from '../ast';
+import {
+  ExpressionStatement,
+  IntegerLiteral,
+  LetStatement,
+  ReturnStatement,
+  Statement,
+  Expression,
+  Identifier,
+} from '../ast';
 import { Lexer } from '../lexer';
 
 describe('Parser', () => {
@@ -75,6 +83,31 @@ describe('Parser', () => {
         const ident = stmt.Expression;
         expect(ident.Value).toEqual('foobar');
         expect(ident.TokenLiteral()).toEqual('foobar');
+      }
+    }
+  });
+
+  describe('Test integer literal expression', () => {
+    const input = "5;";
+  
+    const l = new Lexer(input);
+    const p = new Parser(l);
+    const program = p.ParseProgram();
+    checkParserErrors(p);
+  
+    if (program.Statements.length !== 1) {
+      throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
+    }
+  
+    const stmt = program.Statements[0];
+    expect(stmt instanceof ExpressionStatement).toEqual(true);
+  
+    if (stmt instanceof ExpressionStatement) {
+      expect(stmt.Expression instanceof IntegerLiteral);
+      if (stmt.Expression instanceof IntegerLiteral) {
+        const literal = stmt.Expression;
+        expect(literal.Value).toEqual(5);
+        expect(literal.TokenLiteral()).toEqual('5');
       }
     }
   });

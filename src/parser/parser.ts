@@ -1,5 +1,5 @@
 import { Lexer } from '../lexer';
-import { Identifier, LetStatement, Program, Statement, ReturnStatement, Expression, ExpressionStatement } from '../ast';
+import { Identifier, LetStatement, Program, Statement, ReturnStatement, Expression, ExpressionStatement, IntegerLiteral } from '../ast';
 import { Token, TokenType } from '../token';
 
 type prefixParseFn = () => Expression | null;
@@ -26,7 +26,8 @@ export class Parser {
 
   constructor(lexer: Lexer) {
     this.parseIdentifier = this.parseIdentifier.bind(this);
-    
+    this.parseIntegerLiteral = this.parseIntegerLiteral.bind(this);
+
     this.l = lexer;
 
     this.nextToken();
@@ -34,6 +35,7 @@ export class Parser {
 
     this.prefixParseFns = new Map();
     this.registerPrefix(TokenType.IDENT, this.parseIdentifier);
+    this.registerPrefix(TokenType.INT, this.parseIntegerLiteral);
     this.infixParseFns = new Map();
   }
 
@@ -148,6 +150,20 @@ export class Parser {
 
     return new Identifier(this.curToken, this.curToken.Literal);
   }
+
+  parseIntegerLiteral(): Expression | null {
+    if (!this.curToken) {
+      return null;
+    }
+    const lit = new IntegerLiteral(this.curToken);
+    const value = parseInt(this.curToken.Literal);
+    if(value === NaN) {
+      this.errors.push(Error(`Could not parse ${this.curToken.Literal} as an integer`));
+      return null;
+    }
+    lit.Value = value;
+    return lit;
+   }
 
   curTokenIs(t: TokenType): boolean { 
     return !!this.curToken && this.curToken.Type === t;

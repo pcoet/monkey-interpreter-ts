@@ -2,6 +2,7 @@ export {
   Expression,
   ExpressionStatement,
   Identifier,
+  IntegerLiteral,
   LetStatement,
   Program,
   ReturnStatement,
