@@ -1,18 +1,18 @@
 import { Parser } from './parser';
 import {
+  Expression,
   ExpressionStatement,
+  Identifier,
   IntegerLiteral,
   LetStatement,
+  PrefixExpression,
   ReturnStatement,
   Statement,
-  Expression,
-  Identifier,
 } from '../ast';
 import { Lexer } from '../lexer';
 
 describe('Parser', () => {
   describe('Test LetStatement', () => {
-    const t = test;
     const tests = [
       { input: 'let x = 5;', expectedIdentifier: 'x', expectedValue: 5 },
       { input: 'let y = 10;', expectedIdentifier: 'y', expectedValue: 10 },
@@ -20,6 +20,7 @@ describe('Parser', () => {
     ];
 
     tests.forEach((tt) => {
+      const t = test;
       const l = new Lexer(tt.input);
       const p = new Parser(l);
       const program = p.ParseProgram();
@@ -39,7 +40,6 @@ describe('Parser', () => {
   });
 
   describe('Test ReturnStatement', () => {
-    const t = test;
     const tests = [
       { input: 'return 5;', expectedValue: 5 },
       { input: 'return 10;', expectedValue: 10 },
@@ -111,6 +111,36 @@ describe('Parser', () => {
       }
     }
   });
+
+  describe('Test parsing prefix expressions', () => {
+    const t = test;
+    const prefixTests = [
+      { input: '!5;', operator: '!', integerValue: 5 },
+      { input: '-15;', operator: '-', integerValue: 15 },
+    ];
+
+    prefixTests.forEach((tt) => {
+      const l = new Lexer(tt.input);
+      const p = new Parser(l);
+      const program = p.ParseProgram();
+      checkParserErrors(p);
+
+      if (program.Statements.length !== 1) {
+        throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
+      }
+
+      const stmt = program.Statements[0];
+      expect(stmt instanceof ExpressionStatement).toEqual(true);
+      if (stmt instanceof ExpressionStatement) {
+        const exp = stmt.Expression;
+        expect(exp instanceof PrefixExpression).toEqual(true);
+        if (exp instanceof PrefixExpression) {
+          expect(exp.Operator).toEqual(tt.operator);
+          testIntegerLiteral(t, exp.Right, tt.integerValue);
+        }
+      }
+    });
+  });
 });
 
 function checkParserErrors(p: Parser): void {  
@@ -141,3 +171,12 @@ function testLetStatement(t: jest.It, s: Statement, name: string): void {
 function testLiteralExpression(t: jest.It, exp: Expression, expected: any) {
   console.log(`test: ${test}; exp: ${exp}; expected: ${expected}`);
 };
+
+function testIntegerLiteral(t: jest.It, il: Expression | undefined | null, value: number): void {
+  expect(il instanceof IntegerLiteral).toBe(true);
+  if (il instanceof IntegerLiteral) {
+    const integ = il;
+    expect(integ.Value).toEqual(value);
+    expect(integ.TokenLiteral()).toEqual(value.toString());
+  }
+}

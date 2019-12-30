@@ -4,6 +4,7 @@ export {
   Identifier,
   IntegerLiteral,
   LetStatement,
+  PrefixExpression,
   Program,
   ReturnStatement,
   Statement

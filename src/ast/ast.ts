@@ -160,3 +160,30 @@ export class IntegerLiteral implements Expression {
     return '';
   }
 }
+
+export class PrefixExpression implements Expression {
+  public Token: Token;
+  public Operator: string | undefined;
+  public Right: Expression | undefined | null;
+
+  constructor(token: Token, operator?: string, right?: Expression) {
+    this.Token = token;
+    this.Operator = operator;
+    this.Right = right;
+  }
+
+  expressionNode() {}
+
+  public TokenLiteral(): string {
+    return this.Token.Literal;
+  }
+
+  String(): string {
+    let out = '';
+    out += '(';
+    out += this.Operator;
+    out += this.Right? this.Right.String() : '';
+    out += ')';
+    return out;
+  }
+}

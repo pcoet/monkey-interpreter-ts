@@ -1,5 +1,5 @@
 import { Lexer } from '../lexer';
-import { Identifier, LetStatement, Program, Statement, ReturnStatement, Expression, ExpressionStatement, IntegerLiteral } from '../ast';
+import { Identifier, LetStatement, Program, Statement, ReturnStatement, Expression, ExpressionStatement, IntegerLiteral, PrefixExpression } from '../ast';
 import { Token, TokenType } from '../token';
 
 type prefixParseFn = () => Expression | null;
@@ -27,6 +27,7 @@ export class Parser {
   constructor(lexer: Lexer) {
     this.parseIdentifier = this.parseIdentifier.bind(this);
     this.parseIntegerLiteral = this.parseIntegerLiteral.bind(this);
+    this.parsePrefixExpression = this.parsePrefixExpression.bind(this);
 
     this.l = lexer;
 
@@ -36,6 +37,8 @@ export class Parser {
     this.prefixParseFns = new Map();
     this.registerPrefix(TokenType.IDENT, this.parseIdentifier);
     this.registerPrefix(TokenType.INT, this.parseIntegerLiteral);
+    this.registerPrefix(TokenType.BANG, this.parsePrefixExpression);
+    this.registerPrefix(TokenType.MINUS, this.parsePrefixExpression);
     this.infixParseFns = new Map();
   }
 
@@ -130,13 +133,19 @@ export class Parser {
     return stmt;
   }
 
+  noPrefixParseFnError(t: TokenType) {
+    const msg = `No prefix parse function for ${t} found`;
+    this.errors.push(new Error(msg));
+  }
+
   parseExpression(precedence: Precedence): Expression | null {
     if (!this.curToken) {
       return null;
     }
     const prefix = this.prefixParseFns.get(this.curToken.Type);
 
-    if (!prefix) { 
+    if (!prefix) {
+      this.noPrefixParseFnError(this.curToken.Type);
       return null;
     }
     const leftExp = prefix();
@@ -163,7 +172,21 @@ export class Parser {
     }
     lit.Value = value;
     return lit;
-   }
+  }
+
+  parsePrefixExpression(): Expression | null {
+    if (!this.curToken) {
+      return null;
+    }
+    const expression = new PrefixExpression(this.curToken, this.curToken.Literal);
+    if (!expression) {
+      return null;
+    }
+    this.nextToken();
+
+    expression.Right = this.parseExpression(Precedence.PREFIX);
+    return expression;
+  }
 
   curTokenIs(t: TokenType): boolean { 
     return !!this.curToken && this.curToken.Type === t;
