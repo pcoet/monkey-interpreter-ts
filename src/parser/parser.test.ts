@@ -1,5 +1,5 @@
 import { Parser } from './parser';
-import { LetStatement, ReturnStatement, Statement, Expression } from '../ast';
+import { ExpressionStatement, LetStatement, ReturnStatement, Statement, Expression, Identifier } from '../ast';
 import { Lexer } from '../lexer';
 
 describe('Parser', () => {
@@ -52,6 +52,31 @@ describe('Parser', () => {
       expect(stmt instanceof ReturnStatement).toEqual(true);
       expect(stmt.TokenLiteral()).toEqual('return');
     });
+  });
+
+  describe('Test identifier expression', () => {
+    const input = 'foobar;';
+
+    const l = new Lexer(input);
+    const p = new Parser(l);
+    const program = p.ParseProgram();
+    checkParserErrors(p);
+
+    if (program.Statements.length !== 1) {
+      throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
+    }
+
+    const stmt = program.Statements[0];
+    expect(stmt instanceof ExpressionStatement).toEqual(true);
+    
+    if (stmt instanceof ExpressionStatement) {
+      expect(stmt.Expression instanceof Identifier);
+      if (stmt.Expression instanceof Identifier) {
+        const ident = stmt.Expression;
+        expect(ident.Value).toEqual('foobar');
+        expect(ident.TokenLiteral()).toEqual('foobar');
+      }
+    }
   });
 });
 

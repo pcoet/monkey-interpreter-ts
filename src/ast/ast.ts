@@ -37,8 +37,8 @@ export class Program implements Node {
 }
 
 export class Identifier implements Expression {
-  Token: Token; // the token.IDENT token
-  Value: string;
+  public Token: Token; // the token.IDENT token
+  public Value: string;
 
   constructor(token: Token, value: string) {
     this.Token = token;

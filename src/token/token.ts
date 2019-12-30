@@ -1,7 +1,5 @@
-export type TokType = string;
-
 export interface Token {
-  Type: TokType;
+  Type: TokenType;
   Literal: string;
 }
 
