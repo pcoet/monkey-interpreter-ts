@@ -74,16 +74,11 @@ export class LetStatement implements Statement {
 
   String(): string {
     let out = '';
-    const Name = this.Name ? this.Name.String() : '';
     out += `${this.TokenLiteral()} `;
-    out += `${Name} = `;
-
-    if (this.Value) {
-      out += this.Value.String();
-    }
-
+    out += this.Name ? `${this.Name.String()} = ` : '';
+    out += this.Value ? this.Value.String() : '';
     out += ';';
-    return out;
+    return out;    
   }
 }
 

@@ -17,8 +17,8 @@ enum Precedence {
 
 export class Parser {
   l: Lexer;
-  curToken: Token | undefined;
-  peekToken: Token | undefined;
+  curToken: Token;
+  peekToken: Token;
   errors: Error[] = [];
 
   prefixParseFns: Map<TokenType, prefixParseFn>;
@@ -28,12 +28,9 @@ export class Parser {
     this.parseIdentifier = this.parseIdentifier.bind(this);
     this.parseIntegerLiteral = this.parseIntegerLiteral.bind(this);
     this.parsePrefixExpression = this.parsePrefixExpression.bind(this);
-
     this.l = lexer;
-
-    this.nextToken();
-    this.nextToken();
-
+    this.curToken = this.l.nextToken(); // replaces first call to this.nextToken();
+    this.peekToken = this.l.nextToken(); // replaces second call to this.nextToken();
     this.prefixParseFns = new Map();
     this.registerPrefix(TokenType.IDENT, this.parseIdentifier);
     this.registerPrefix(TokenType.INT, this.parseIntegerLiteral);
@@ -50,7 +47,7 @@ export class Parser {
   public ParseProgram(): Program {
     const program = new Program([]);
 
-    while(this.curToken && this.curToken.Type !== TokenType.EOF) {
+    while(this.curToken.Type !== TokenType.EOF) {
       const stmt = this.parseStatement();
       if (stmt !== null) {
         program.Statements.push(stmt);
@@ -66,9 +63,7 @@ export class Parser {
   }
 
   parseStatement(): Statement | null {
-    if (!this.curToken) {
-      return null;
-    }
+
     switch (this.curToken.Type) {
       case TokenType.LET:
         return this.parseLetStatement();
@@ -79,11 +74,7 @@ export class Parser {
     }
   }
 
-  parseLetStatement(): LetStatement | null {
-    if (!this.curToken) {
-      return null;
-    }
-    
+  parseLetStatement(): LetStatement | null {    
     const stmt = new LetStatement(this.curToken);
     
     if (!this.expectPeek(TokenType.IDENT)) {
@@ -104,11 +95,7 @@ export class Parser {
     return stmt;
   }
 
-  parseReturnStatement(): ReturnStatement | null {
-    if (!this.curToken) {
-      return null;
-    }
-    
+  parseReturnStatement(): ReturnStatement {    
     const stmt = new ReturnStatement(this.curToken);
     this.nextToken();
 
@@ -119,10 +106,7 @@ export class Parser {
     return stmt;
   }
 
-  parseExpressionStatement(): ExpressionStatement | null {
-    if (!this.curToken) {
-      return null;
-    }
+  parseExpressionStatement(): ExpressionStatement {
     const stmt = new ExpressionStatement(this.curToken);
 
     stmt.Expression = this.parseExpression(Precedence.LOWEST) || undefined;
@@ -139,9 +123,6 @@ export class Parser {
   }
 
   parseExpression(precedence: Precedence): Expression | null {
-    if (!this.curToken) {
-      return null;
-    }
     const prefix = this.prefixParseFns.get(this.curToken.Type);
 
     if (!prefix) {
@@ -152,18 +133,11 @@ export class Parser {
     return leftExp;
   }
 
-  parseIdentifier(): Expression | null {
-    if (!this.curToken) {
-      return null;
-    }
-
+  parseIdentifier(): Expression {
     return new Identifier(this.curToken, this.curToken.Literal);
   }
 
   parseIntegerLiteral(): Expression | null {
-    if (!this.curToken) {
-      return null;
-    }
     const lit = new IntegerLiteral(this.curToken);
     const value = parseInt(this.curToken.Literal);
     if(value === NaN) {
@@ -174,14 +148,8 @@ export class Parser {
     return lit;
   }
 
-  parsePrefixExpression(): Expression | null {
-    if (!this.curToken) {
-      return null;
-    }
+  parsePrefixExpression(): Expression {
     const expression = new PrefixExpression(this.curToken, this.curToken.Literal);
-    if (!expression) {
-      return null;
-    }
     this.nextToken();
 
     expression.Right = this.parseExpression(Precedence.PREFIX);
