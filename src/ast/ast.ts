@@ -182,3 +182,33 @@ export class PrefixExpression implements Expression {
     return out;
   }
 }
+
+export class InfixExpression implements Expression {
+  public Token: Token;
+  public Left: Expression | undefined;
+  public Operator: string | undefined;
+  public Right: Expression | undefined | null;
+
+  constructor(token: Token, left?: Expression, operator?: string, right?: Expression) {
+    this.Token = token;
+    this.Left = left;
+    this.Operator = operator;
+    this.Right = right;
+  }
+
+  expressionNode() {}
+
+  public TokenLiteral(): string {
+    return this.Token.Literal;
+  }
+
+  String(): string {
+    let out = '';
+    out += '(';
+    out += this.Left? this.Left.String() : '';
+    out += ' ' + this.Operator + ' ';
+    out += this.Right? this.Right.String() : '';
+    out += ')';
+    return out;
+  }
+}

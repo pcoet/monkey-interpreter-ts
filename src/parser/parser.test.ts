@@ -3,6 +3,7 @@ import {
   Expression,
   ExpressionStatement,
   Identifier,
+  InfixExpression,
   IntegerLiteral,
   LetStatement,
   PrefixExpression,
@@ -49,69 +50,80 @@ describe('Parser', () => {
     ];
 
     tests.forEach((tt) => {
-      const l = new Lexer(tt.input);
-      const p = new Parser(l);
-      const program = p.ParseProgram();
-      checkParserErrors(p);
+      test('', () => {
+        const l = new Lexer(tt.input);
+        const p = new Parser(l);
+        const program = p.ParseProgram();
+        checkParserErrors(p);
 
-      if (program.Statements.length !== 1) {
-        throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
-      }
+        if (program.Statements.length !== 1) {
+          throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
+        }
 
-      const stmt = program.Statements[0];
-      expect(stmt instanceof ReturnStatement).toEqual(true);
-      expect(stmt.TokenLiteral()).toEqual('return');
+        const stmt = program.Statements[0];
+        expect(stmt instanceof ReturnStatement).toEqual(true);
+        expect(stmt.TokenLiteral()).toEqual('return');
+        /*
+        if (stmt instanceof ReturnStatement) {
+          expect(stmt.ReturnValue).toEqual(tt.expectedValue);
+        }
+        */
+      });
     });
   });
 
-  describe('Test identifier expression', () => {
-    const input = 'foobar;';
+  describe('Test Identifier expression', () => {
+    test('Identifier expression has the expected Value', () => {
+      const input = 'foobar;';
 
-    const l = new Lexer(input);
-    const p = new Parser(l);
-    const program = p.ParseProgram();
-    checkParserErrors(p);
-
-    if (program.Statements.length !== 1) {
-      throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
-    }
-
-    const stmt = program.Statements[0];
-    expect(stmt instanceof ExpressionStatement).toEqual(true);
-    
-    if (stmt instanceof ExpressionStatement) {
-      expect(stmt.Expression instanceof Identifier);
-      if (stmt.Expression instanceof Identifier) {
-        const ident = stmt.Expression;
-        expect(ident.Value).toEqual('foobar');
-        expect(ident.TokenLiteral()).toEqual('foobar');
+      const l = new Lexer(input);
+      const p = new Parser(l);
+      const program = p.ParseProgram();
+      checkParserErrors(p);
+  
+      if (program.Statements.length !== 1) {
+        throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
       }
-    }
+  
+      const stmt = program.Statements[0];
+      expect(stmt instanceof ExpressionStatement).toEqual(true);
+      
+      if (stmt instanceof ExpressionStatement) {
+        expect(stmt.Expression instanceof Identifier);
+        if (stmt.Expression instanceof Identifier) {
+          const ident = stmt.Expression;
+          expect(ident.Value).toEqual('foobar');
+          expect(ident.TokenLiteral()).toEqual('foobar');
+        }
+      }
+    });
   });
 
   describe('Test integer literal expression', () => {
-    const input = "5;";
+    test('IntegerLiteral expression has the expected value', () => {
+      const input = '5;';
   
-    const l = new Lexer(input);
-    const p = new Parser(l);
-    const program = p.ParseProgram();
-    checkParserErrors(p);
-  
-    if (program.Statements.length !== 1) {
-      throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
-    }
-  
-    const stmt = program.Statements[0];
-    expect(stmt instanceof ExpressionStatement).toEqual(true);
-  
-    if (stmt instanceof ExpressionStatement) {
-      expect(stmt.Expression instanceof IntegerLiteral);
-      if (stmt.Expression instanceof IntegerLiteral) {
-        const literal = stmt.Expression;
-        expect(literal.Value).toEqual(5);
-        expect(literal.TokenLiteral()).toEqual('5');
+      const l = new Lexer(input);
+      const p = new Parser(l);
+      const program = p.ParseProgram();
+      checkParserErrors(p);
+    
+      if (program.Statements.length !== 1) {
+        throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
       }
-    }
+    
+      const stmt = program.Statements[0];
+      expect(stmt instanceof ExpressionStatement).toEqual(true);
+    
+      if (stmt instanceof ExpressionStatement) {
+        expect(stmt.Expression instanceof IntegerLiteral);
+        if (stmt.Expression instanceof IntegerLiteral) {
+          const literal = stmt.Expression;
+          expect(literal.Value).toEqual(5);
+          expect(literal.TokenLiteral()).toEqual('5');
+        }
+      }
+    });
   });
 
   describe('Test parsing prefix expressions', () => {
@@ -122,25 +134,132 @@ describe('Parser', () => {
     ];
 
     prefixTests.forEach((tt) => {
-      const l = new Lexer(tt.input);
-      const p = new Parser(l);
-      const program = p.ParseProgram();
-      checkParserErrors(p);
+      test('PrefixExpression has the expected operator and value', () => {
+        const l = new Lexer(tt.input);
+        const p = new Parser(l);
+        const program = p.ParseProgram();
+        checkParserErrors(p);
 
-      if (program.Statements.length !== 1) {
-        throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
-      }
-
-      const stmt = program.Statements[0];
-      expect(stmt instanceof ExpressionStatement).toEqual(true);
-      if (stmt instanceof ExpressionStatement) {
-        const exp = stmt.Expression;
-        expect(exp instanceof PrefixExpression).toEqual(true);
-        if (exp instanceof PrefixExpression) {
-          expect(exp.Operator).toEqual(tt.operator);
-          testIntegerLiteral(t, exp.Right, tt.integerValue);
+        if (program.Statements.length !== 1) {
+          throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
         }
-      }
+
+        const stmt = program.Statements[0];
+        expect(stmt instanceof ExpressionStatement).toEqual(true);
+        if (stmt instanceof ExpressionStatement) {
+          const exp = stmt.Expression;
+          expect(exp instanceof PrefixExpression).toEqual(true);
+          if (exp instanceof PrefixExpression) {
+            expect(exp.Operator).toEqual(tt.operator);
+            testIntegerLiteral(t, exp.Right, tt.integerValue);
+          }
+        }
+      });
+    });
+  });
+
+  describe('Test parsing infix expressions', () => {
+    const t = test;
+    const infixTests = [
+      { input: '5 + 5;', leftValue: 5, operator: '+', rightValue: 5 },
+      { input: '5 - 5;', leftValue: 5, operator: '-', rightValue: 5 },
+      { input: '5 * 5;', leftValue: 5, operator: '*', rightValue: 5 },
+      { input: '5 / 5;', leftValue: 5, operator: '/', rightValue: 5 },
+      { input: '5 > 5;', leftValue: 5, operator: '>', rightValue: 5 },
+      { input: '5 < 5;', leftValue: 5, operator: '<', rightValue: 5 },
+      { input: '5 == 5;', leftValue: 5, operator: '==', rightValue: 5 },
+      { input: '5 != 5;', leftValue: 5, operator: '!=', rightValue: 5 },
+    ];
+  
+    infixTests.forEach((tt) => {
+      test('InfixExpression has the expected values and operator', () => {
+        const l = new Lexer(tt.input);
+        const p = new Parser(l);
+        const program = p.ParseProgram();
+        checkParserErrors(p);
+  
+        if (program.Statements.length !== 1) {
+          throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
+        }
+  
+        const stmt = program.Statements[0];
+        expect(stmt instanceof ExpressionStatement).toEqual(true);
+        if (stmt instanceof ExpressionStatement) {
+          const exp = stmt.Expression;
+          expect(exp instanceof InfixExpression).toEqual(true);
+          if (exp instanceof InfixExpression) {
+            testIntegerLiteral(t, exp.Left, tt.leftValue);
+            expect(exp.Operator).toEqual(tt.operator);
+            testIntegerLiteral(t, exp.Right, tt.rightValue);
+          }
+        }
+      });
+    });
+  });
+
+  describe('Test operator precedence parsing', () => {
+    const tests = [
+      {
+        input: '-a * b',
+        expected: '((-a) * b)',
+      },
+      {
+        input: '!-a',
+        expected: '(!(-a))',
+      },
+      {
+        input: 'a + b + c',
+        expected: '((a + b) + c)',
+      },
+      {
+        input: 'a + b - c',
+        expected: '((a + b) - c)',
+      },
+      {
+        input: 'a * b * c',
+        expected: '((a * b) * c)',
+      },
+      {
+        input: 'a * b / c',
+        expected: '((a * b) / c)',
+      },
+      {
+        input: 'a + b / c',
+        expected: '(a + (b / c))',
+      },
+      {
+        input: 'a + b * c + d / e - f',
+        expected: '(((a + (b * c)) + (d / e)) - f)',
+      },
+      {
+        input: '3 + 4; -5 * 5',
+        expected: '(3 + 4)((-5) * 5)',
+      },
+      {
+        input: '5 > 4 == 3 < 4',
+        expected: '((5 > 4) == (3 < 4))',
+      },
+      {
+        input: '5 < 4 != 3 > 4',
+        expected: '((5 < 4) != (3 > 4))',
+      },
+      {
+        input: '3 + 4 * 5 == 3 * 1 + 4 * 5',
+        expected: '((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))',
+      },
+    ];
+  
+    tests.forEach((tt) => {
+      test('Parentheses are added correctly, to indicate precedence', () => {
+        const l = new Lexer(tt.input);
+        const p = new Parser(l);
+        const program = p.ParseProgram();
+        checkParserErrors(p);
+
+        const actual = program.String();
+      
+        expect(actual).toEqual(tt.expected);
+      });
     });
   });
 });

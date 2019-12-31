@@ -2,6 +2,7 @@ export {
   Expression,
   ExpressionStatement,
   Identifier,
+  InfixExpression,
   IntegerLiteral,
   LetStatement,
   PrefixExpression,
