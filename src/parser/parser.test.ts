@@ -7,7 +7,6 @@ import {
   LetStatement,
   PrefixExpression,
   ReturnStatement,
-  Statement,
 } from '../ast';
 import { Lexer } from '../lexer';
 
@@ -20,7 +19,6 @@ describe('Parser', () => {
     ];
 
     tests.forEach((tt) => {
-      const t = test;
       const l = new Lexer(tt.input);
       const p = new Parser(l);
       const program = p.ParseProgram();
@@ -31,11 +29,15 @@ describe('Parser', () => {
       }
 
       const stmt = program.Statements[0];
-      testLetStatement(t, stmt, tt.expectedIdentifier);
-
-      if (!(stmt instanceof LetStatement)) {
-        throw new Error('Expected instance of LetStatement');
-      }
+      test('test let statement', () => {
+        const name = tt.expectedIdentifier;
+        expect(stmt.TokenLiteral()).toEqual('let');
+        expect(stmt instanceof LetStatement && !!stmt.Name).toEqual(true);
+        if (stmt instanceof LetStatement && !!stmt.Name) {
+          expect(stmt.Name.Value).toEqual(name);
+          expect(stmt.Name.TokenLiteral()).toEqual(name);
+        } 
+      });
     });
   });
 
@@ -155,17 +157,6 @@ function checkParserErrors(p: Parser): void {
   });
   throw new Error(errMsg);
 };
-
-function testLetStatement(t: jest.It, s: Statement, name: string): void {
-  t('test let statement', () => {
-    expect(s.TokenLiteral()).toEqual('let');
-    expect(s instanceof LetStatement && !!s.Name).toEqual(true);
-    if (s instanceof LetStatement && !!s.Name) {
-      expect(s.Name.Value).toEqual(name);
-      expect(s.Name.TokenLiteral()).toEqual(name);
-    } 
-  });
-}
 
 // TODO: implement
 function testLiteralExpression(t: jest.It, exp: Expression, expected: any) {
