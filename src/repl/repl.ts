@@ -1,10 +1,10 @@
 import * as readline from 'readline';
 
 import { Lexer } from '../lexer';
-import { TokenType } from '../token/';
+import { TokenType } from '../token';
 
 export class Repl {
-  static start(stdin: NodeJS.ReadStream, stdout: NodeJS.WriteStream) {
+  static start(stdin: NodeJS.ReadStream, stdout: NodeJS.WriteStream): void {
     const rl = readline.createInterface({
       input: stdin,
       output: stdout,
@@ -13,7 +13,7 @@ export class Repl {
     });
 
     rl.prompt();
-    rl.on('line', function(line) {
+    rl.on('line', (line) => {
       const l = new Lexer(line);
       let tok = l.nextToken();
 

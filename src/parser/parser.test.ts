@@ -1,5 +1,7 @@
+/* eslint-disable object-curly-newline */
 import { Parser } from './parser';
 import {
+  BooleanExpression,
   Expression,
   ExpressionStatement,
   Identifier,
@@ -10,6 +12,35 @@ import {
   ReturnStatement,
 } from '../ast';
 import { Lexer } from '../lexer';
+
+function checkParserErrors(p: Parser): void {
+  const errors = p.Errors();
+  if (errors.length === 0) {
+    return;
+  }
+
+  let errMsg = '';
+  errors.forEach((err, i) => {
+    errMsg += `Parser error ${i}: ${err.message}`;
+  });
+  throw new Error(errMsg);
+}
+
+// TODO: implement
+/*
+function testLiteralExpression(t: jest.It, exp: Expression, expected: any) {
+  console.log(`test: ${test}; exp: ${exp}; expected: ${expected}`);
+}
+*/
+
+function testIntegerLiteral(t: jest.It, il: Expression | undefined | null, value: number): void {
+  expect(il instanceof IntegerLiteral).toBe(true);
+  if (il instanceof IntegerLiteral) {
+    const integ = il;
+    expect(integ.Value).toEqual(value);
+    expect(integ.TokenLiteral()).toEqual(value.toString());
+  }
+}
 
 describe('Parser', () => {
   describe('Test LetStatement', () => {
@@ -37,7 +68,7 @@ describe('Parser', () => {
         if (stmt instanceof LetStatement && !!stmt.Name) {
           expect(stmt.Name.Value).toEqual(name);
           expect(stmt.Name.TokenLiteral()).toEqual(name);
-        } 
+        }
       });
     });
   });
@@ -80,14 +111,14 @@ describe('Parser', () => {
       const p = new Parser(l);
       const program = p.ParseProgram();
       checkParserErrors(p);
-  
+
       if (program.Statements.length !== 1) {
         throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
       }
-  
+
       const stmt = program.Statements[0];
       expect(stmt instanceof ExpressionStatement).toEqual(true);
-      
+
       if (stmt instanceof ExpressionStatement) {
         expect(stmt.Expression instanceof Identifier);
         if (stmt.Expression instanceof Identifier) {
@@ -102,19 +133,19 @@ describe('Parser', () => {
   describe('Test integer literal expression', () => {
     test('IntegerLiteral expression has the expected value', () => {
       const input = '5;';
-  
+
       const l = new Lexer(input);
       const p = new Parser(l);
       const program = p.ParseProgram();
       checkParserErrors(p);
-    
+
       if (program.Statements.length !== 1) {
         throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
       }
-    
+
       const stmt = program.Statements[0];
       expect(stmt instanceof ExpressionStatement).toEqual(true);
-    
+
       if (stmt instanceof ExpressionStatement) {
         expect(stmt.Expression instanceof IntegerLiteral);
         if (stmt.Expression instanceof IntegerLiteral) {
@@ -170,18 +201,18 @@ describe('Parser', () => {
       { input: '5 == 5;', leftValue: 5, operator: '==', rightValue: 5 },
       { input: '5 != 5;', leftValue: 5, operator: '!=', rightValue: 5 },
     ];
-  
+
     infixTests.forEach((tt) => {
       test('InfixExpression has the expected values and operator', () => {
         const l = new Lexer(tt.input);
         const p = new Parser(l);
         const program = p.ParseProgram();
         checkParserErrors(p);
-  
+
         if (program.Statements.length !== 1) {
           throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
         }
-  
+
         const stmt = program.Statements[0];
         expect(stmt instanceof ExpressionStatement).toEqual(true);
         if (stmt instanceof ExpressionStatement) {
@@ -248,7 +279,7 @@ describe('Parser', () => {
         expected: '((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))',
       },
     ];
-  
+
     tests.forEach((tt) => {
       test('Parentheses are added correctly, to indicate precedence', () => {
         const l = new Lexer(tt.input);
@@ -257,36 +288,41 @@ describe('Parser', () => {
         checkParserErrors(p);
 
         const actual = program.String();
-      
+
         expect(actual).toEqual(tt.expected);
       });
     });
   });
 });
+// TODO don't skip
+describe.skip('Test boolean expression', () => {
+  const tests = [
+    { input: 'true', expectedBoolean: true },
+    { input: 'false', expectedBoolean: false },
+  ];
 
-function checkParserErrors(p: Parser): void {  
-  const errors = p.Errors();
-  if (errors.length === 0) {
-    return;
-  }
+  tests.forEach((tt) => {
+    const { input, expectedBoolean } = tt;
+    test(`${input}`, () => {
+      const l = new Lexer(input);
+      const p = new Parser(l);
+      const program = p.ParseProgram();
+      checkParserErrors(p);
 
-  let errMsg = '';
-  errors.forEach((err, i) => {
-    errMsg += `Parser error ${i}: ${err.message}`;
+      if (program.Statements.length !== 1) {
+        throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
+      }
+
+      const stmt = program.Statements[0];
+      expect(stmt instanceof ExpressionStatement).toEqual(true);
+      if (stmt instanceof ExpressionStatement) {
+        const exp = stmt.Expression;
+        expect(exp instanceof BooleanExpression).toEqual(true);
+        if (exp instanceof BooleanExpression) {
+          const { Value: boolean } = exp;
+          expect(boolean).toEqual(expectedBoolean);
+        }
+      }
+    });
   });
-  throw new Error(errMsg);
-};
-
-// TODO: implement
-function testLiteralExpression(t: jest.It, exp: Expression, expected: any) {
-  console.log(`test: ${test}; exp: ${exp}; expected: ${expected}`);
-};
-
-function testIntegerLiteral(t: jest.It, il: Expression | undefined | null, value: number): void {
-  expect(il instanceof IntegerLiteral).toBe(true);
-  if (il instanceof IntegerLiteral) {
-    const integ = il;
-    expect(integ.Value).toEqual(value);
-    expect(integ.TokenLiteral()).toEqual(value.toString());
-  }
-}
+});

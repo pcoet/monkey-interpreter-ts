@@ -16,6 +16,11 @@
   ],
   "rules": {
     "quotes": ["error", "single"],
-    "no-console": 0
+    "no-console": 0,
+    "max-classes-per-file": 0,
+    "import/prefer-default-export": 0,
+    "lines-between-class-members": 0,
+    "no-unbound-method": 0,
+    "@typescript-eslint/unbound-method": 0
   }
 }

@@ -1,4 +1,4 @@
-import { Token, TokenType, lookUpIdent } from '../token/';
+import { Token, TokenType, lookUpIdent } from '../token';
 
 export type Char = string;
 
@@ -16,159 +16,158 @@ export class Lexer {
     this.readChar();
   }
 
-  private newToken(tokenType: TokenType, ch: Char): Token {
+  static newToken(tokenType: TokenType, ch: Char): Token {
     return {
       Type: tokenType,
       Literal: ch,
-    }
-  };
+    };
+  }
 
-  private readChar() {
+  private readChar(): void {
     if (this.readPosition >= this.input.length) {
       this.ch = null;
     } else {
-      this.ch = this.input[this.readPosition]
+      this.ch = this.input[this.readPosition];
     }
-    this.position = this.readPosition
+    this.position = this.readPosition;
     this.readPosition += 1;
   }
 
-  private isLetter(ch: Char | null): boolean {
-    if (!ch) { return false };
-    return 'a' <= ch && ch <= 'z' || 'A' <= ch && ch <= 'Z' || ch === '_'; // defines allowed letters in identifiers
-  };
+  static isLetter(ch: Char | null): boolean {
+    if (!ch) { return false; }
+    return (ch >= 'a' && ch <= 'z') || (ch >= 'A' && ch <= 'Z') || ch === '_'; // defines allowed letters in identifiers
+  }
 
-  private isDigit(ch: Char | null): boolean {
-    if (!ch) { return false };
-    return '0' <= ch && ch <= '9'; //TODO: confirm that we only support integers, not floats, etc.
-  };
+  static isDigit(ch: Char | null): boolean {
+    if (!ch) { return false; }
+    return ch >= '0' && ch <= '9'; // TODO: confirm that we only support integers, not floats, etc.
+  }
 
   private readIdentifier(): string {
-    const position = this.position;
-    while (this.isLetter(this.ch)) {
+    const { position } = this;
+    while (Lexer.isLetter(this.ch)) {
       this.readChar();
     }
     return this.input.slice(position, this.position);
   }
 
-  private skipWhitespace() {
+  private skipWhitespace(): void {
     while (this.ch === ' ' || this.ch === '\t' || this.ch === '\n' || this.ch === '\r') {
       this.readChar();
     }
-  };
+  }
 
   private readNumber(): string {
-    const position = this.position;
-    while (this.isDigit(this.ch)) {
+    const { position } = this;
+    while (Lexer.isDigit(this.ch)) {
       this.readChar();
     }
     return this.input.slice(position, this.position);
-  };
+  }
 
   private peekChar(): Char | null {
     if (this.readPosition >= this.input.length) {
       return null;
-    } else {
-      return this.input[this.readPosition]
     }
+    return this.input[this.readPosition];
   }
 
   public nextToken(): Token {
     let tok: Token;
-  
+
     this.skipWhitespace();
-    
+
     switch (this.ch) {
       case '=':
         if (this.peekChar() === '=') {
-          const ch = this.ch;
+          const { ch } = this;
           this.readChar();
           const literal = `${ch}${this.ch}`;
           tok = {
             Literal: literal,
             Type: TokenType.EQ,
-          }
+          };
           break;
         } else {
-          tok = this.newToken(TokenType.ASSIGN, this.ch);
+          tok = Lexer.newToken(TokenType.ASSIGN, this.ch);
           break;
         }
       case '+':
-        tok = this.newToken(TokenType.PLUS, this.ch);
+        tok = Lexer.newToken(TokenType.PLUS, this.ch);
         break;
       case '-':
-        tok = this.newToken(TokenType.MINUS, this.ch);
+        tok = Lexer.newToken(TokenType.MINUS, this.ch);
         break;
       case '!':
         if (this.peekChar() === '=') {
-          const ch = this.ch;
+          const { ch } = this;
           this.readChar();
           const literal = `${ch}${this.ch}`;
           tok = {
             Literal: literal,
             Type: TokenType.NOT_EQ,
-          }
+          };
           break;
         } else {
-          tok = this.newToken(TokenType.BANG, this.ch);
+          tok = Lexer.newToken(TokenType.BANG, this.ch);
           break;
         }
       case '/':
-        tok = this.newToken(TokenType.SLASH, this.ch);
+        tok = Lexer.newToken(TokenType.SLASH, this.ch);
         break;
       case '*':
-        tok = this.newToken(TokenType.ASTERISK, this.ch);
+        tok = Lexer.newToken(TokenType.ASTERISK, this.ch);
         break;
       case '<':
-        tok = this.newToken(TokenType.LT, this.ch);
+        tok = Lexer.newToken(TokenType.LT, this.ch);
         break;
       case '>':
-        tok = this.newToken(TokenType.GT, this.ch);
+        tok = Lexer.newToken(TokenType.GT, this.ch);
         break;
       case ';':
-        tok = this.newToken(TokenType.SEMICOLON, this.ch);
+        tok = Lexer.newToken(TokenType.SEMICOLON, this.ch);
         break;
       case ',':
-        tok = this.newToken(TokenType.COMMA, this.ch);
+        tok = Lexer.newToken(TokenType.COMMA, this.ch);
         break;
       case '(':
-        tok = this.newToken(TokenType.LPAREN, this.ch);
+        tok = Lexer.newToken(TokenType.LPAREN, this.ch);
         break;
       case ')':
-        tok = this.newToken(TokenType.RPAREN, this.ch);
+        tok = Lexer.newToken(TokenType.RPAREN, this.ch);
         break;
       case '{':
-        tok = this.newToken(TokenType.LBRACE, this.ch);
+        tok = Lexer.newToken(TokenType.LBRACE, this.ch);
         break;
       case '}':
-        tok = this.newToken(TokenType.RBRACE, this.ch);
+        tok = Lexer.newToken(TokenType.RBRACE, this.ch);
         break;
       case null:
         tok = {
           Type: TokenType.EOF,
-          Literal: ''
+          Literal: '',
         };
         break;
       default: {
-        if (this.isLetter(this.ch)) {
+        if (Lexer.isLetter(this.ch)) {
           const literal = this.readIdentifier();
           tok = {
             Type: lookUpIdent(literal),
             Literal: literal,
-          }
+          };
           return tok;
-        } else if (this.isDigit(this.ch)) {
+        }
+        if (Lexer.isDigit(this.ch)) {
           tok = {
             Type: TokenType.INT,
             Literal: this.readNumber(),
-          }
+          };
           return tok;
-        } else {
-          tok = this.newToken(TokenType.ILLEGAL, this.ch);
         }
+        tok = Lexer.newToken(TokenType.ILLEGAL, this.ch);
       }
     }
     this.readChar();
     return tok;
-  };
+  }
 }

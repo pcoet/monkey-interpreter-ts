@@ -16,7 +16,7 @@ describe('AST', () => {
       Literal: 'anotherVar',
     }, 'anotherVar');
     const letStmt = new LetStatement(token, name, value);
-    const program = new Program([ letStmt ]);
+    const program = new Program([letStmt]);
     expect(program.String()).toEqual('let myVar = anotherVar;');
   });
 });

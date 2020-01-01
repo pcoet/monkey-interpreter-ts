@@ -1,4 +1,5 @@
 export {
+  BooleanExpression,
   Expression,
   ExpressionStatement,
   Identifier,
@@ -8,5 +9,5 @@ export {
   PrefixExpression,
   Program,
   ReturnStatement,
-  Statement
+  Statement,
 } from './ast';

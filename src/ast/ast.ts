@@ -22,9 +22,9 @@ export class Program implements Node {
 
   TokenLiteral(): string {
     if (this.Statements.length > 0) {
-      return this.Statements[0].TokenLiteral()
-    } else {
-      return "" }
+      return this.Statements[0].TokenLiteral();
+    }
+    return '';
   }
 
   String(): string {
@@ -45,8 +45,9 @@ export class Identifier implements Expression {
     this.Value = value;
   }
 
-  expressionNode() {}
-  TokenLiteral(): string { 
+  expressionNode = (): void => {};
+
+  TokenLiteral(): string {
     return this.Token.Literal;
   }
 
@@ -66,7 +67,7 @@ export class LetStatement implements Statement {
     this.Value = value;
   }
 
-  statementNode() {}
+  statementNode = (): void => {};
 
   public TokenLiteral(): string {
     return this.Token.Literal;
@@ -78,7 +79,7 @@ export class LetStatement implements Statement {
     out += this.Name ? `${this.Name.String()} = ` : '';
     out += this.Value ? this.Value.String() : '';
     out += ';';
-    return out;    
+    return out;
   }
 }
 
@@ -91,7 +92,7 @@ export class ReturnStatement implements Statement {
     this.ReturnValue = returnValue;
   }
 
-  statementNode() {}
+  statementNode = (): void => {};
 
   public TokenLiteral(): string {
     return this.Token.Literal;
@@ -99,7 +100,7 @@ export class ReturnStatement implements Statement {
 
   String(): string {
     let out = '';
-    out += `${this.TokenLiteral() }`;
+    out += `${this.TokenLiteral()}`;
 
     if (this.ReturnValue) {
       out += this.ReturnValue.String();
@@ -119,7 +120,7 @@ export class ExpressionStatement implements Statement {
     this.Expression = expression;
   }
 
-  statementNode() {}
+  statementNode = (): void => {};
 
   public TokenLiteral(): string {
     return this.Token.Literal;
@@ -142,7 +143,7 @@ export class IntegerLiteral implements Expression {
     this.Value = value;
   }
 
-  expressionNode() {}
+  expressionNode = (): void => {};
 
   public TokenLiteral(): string {
     return this.Token.Literal;
@@ -167,7 +168,7 @@ export class PrefixExpression implements Expression {
     this.Right = right;
   }
 
-  expressionNode() {}
+  expressionNode = (): void => {};
 
   public TokenLiteral(): string {
     return this.Token.Literal;
@@ -177,7 +178,7 @@ export class PrefixExpression implements Expression {
     let out = '';
     out += '(';
     out += this.Operator;
-    out += this.Right? this.Right.String() : '';
+    out += this.Right ? this.Right.String() : '';
     out += ')';
     return out;
   }
@@ -196,7 +197,7 @@ export class InfixExpression implements Expression {
     this.Right = right;
   }
 
-  expressionNode() {}
+  expressionNode = (): void => {};
 
   public TokenLiteral(): string {
     return this.Token.Literal;
@@ -205,10 +206,30 @@ export class InfixExpression implements Expression {
   String(): string {
     let out = '';
     out += '(';
-    out += this.Left? this.Left.String() : '';
-    out += ' ' + this.Operator + ' ';
-    out += this.Right? this.Right.String() : '';
+    out += this.Left ? this.Left.String() : '';
+    out += ` ${this.Operator} `;
+    out += this.Right ? this.Right.String() : '';
     out += ')';
     return out;
+  }
+}
+
+export class BooleanExpression implements Expression {
+  public Token: Token; // the token.IDENT token
+  public Value: boolean;
+
+  constructor(token: Token, value: boolean) {
+    this.Token = token;
+    this.Value = value;
+  }
+
+  expressionNode = (): void => {};
+
+  TokenLiteral(): string {
+    return this.Token.Literal;
+  }
+
+  String(): string {
+    return this.Token.Literal;
   }
 }

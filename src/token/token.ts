@@ -6,10 +6,10 @@ export interface Token {
 export enum TokenType {
   ILLEGAL = 'ILLEGAL',
   EOF = 'EOF',
-  
+
   // Identifiers + literals
-  IDENT = 'IDENT',  // add, foobar, x, y, ...
-  INT = 'INT',      // 1343456
+  IDENT = 'IDENT', // add, foobar, x, y, ...
+  INT = 'INT', // 1343456
 
   // Operators
   ASSIGN = '=',
@@ -17,7 +17,7 @@ export enum TokenType {
   MINUS = '-',
   BANG = '!',
   ASTERISK = '*',
-  SLASH    = '/',
+  SLASH = '/',
   LT = '<',
   GT = '>',
 
