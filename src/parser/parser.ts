@@ -1,5 +1,6 @@
 import { Lexer } from '../lexer';
 import {
+  BooleanExpression,
   Expression,
   ExpressionStatement,
   Identifier,
@@ -52,6 +53,7 @@ export class Parser {
     this.parsePrefixExpression = this.parsePrefixExpression.bind(this);
     this.parseInfixExpression = this.parseInfixExpression.bind(this);
     this.parseExpression = this.parseExpression.bind(this);
+    this.parseBoolean = this.parseBoolean.bind(this);
     this.l = lexer;
     this.curToken = this.l.nextToken(); // replaces first call to this.nextToken();
     this.peekToken = this.l.nextToken(); // replaces second call to this.nextToken();
@@ -60,6 +62,8 @@ export class Parser {
     this.registerPrefix(TokenType.INT, this.parseIntegerLiteral);
     this.registerPrefix(TokenType.BANG, this.parsePrefixExpression);
     this.registerPrefix(TokenType.MINUS, this.parsePrefixExpression);
+    this.registerPrefix(TokenType.TRUE, this.parseBoolean);
+    this.registerPrefix(TokenType.FALSE, this.parseBoolean);
     this.infixParseFns = new Map();
     this.registerInfix(TokenType.PLUS, this.parseInfixExpression);
     this.registerInfix(TokenType.MINUS, this.parseInfixExpression);
@@ -197,6 +201,10 @@ export class Parser {
 
     expression.Right = this.parseExpression(Precedence.PREFIX);
     return expression;
+  }
+
+  parseBoolean(): Expression {
+    return new BooleanExpression(this.curToken, this.curTokenIs(TokenType.TRUE));
   }
 
   curTokenIs(t: TokenType): boolean {

@@ -278,6 +278,22 @@ describe('Parser', () => {
         input: '3 + 4 * 5 == 3 * 1 + 4 * 5',
         expected: '((3 + (4 * 5)) == ((3 * 1) + (4 * 5)))',
       },
+      {
+        input: 'true',
+        expected: 'true',
+      },
+      {
+        input: 'false',
+        expected: 'false',
+      },
+      {
+        input: '3 > 5 == false',
+        expected: '((3 > 5) == false)',
+      },
+      {
+        input: '3 < 5 == true',
+        expected: '((3 < 5) == true)',
+      },
     ];
 
     tests.forEach((tt) => {
@@ -294,8 +310,8 @@ describe('Parser', () => {
     });
   });
 });
-// TODO don't skip
-describe.skip('Test boolean expression', () => {
+
+describe('Test boolean expression', () => {
   const tests = [
     { input: 'true', expectedBoolean: true },
     { input: 'false', expectedBoolean: false },
