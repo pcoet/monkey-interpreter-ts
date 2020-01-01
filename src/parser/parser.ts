@@ -1,6 +1,6 @@
 import { Lexer } from '../lexer';
 import {
-  BooleanExpression,
+  BooleanLiteral,
   Expression,
   ExpressionStatement,
   Identifier,
@@ -204,7 +204,7 @@ export class Parser {
   }
 
   parseBoolean(): Expression {
-    return new BooleanExpression(this.curToken, this.curTokenIs(TokenType.TRUE));
+    return new BooleanLiteral(this.curToken, this.curTokenIs(TokenType.TRUE));
   }
 
   curTokenIs(t: TokenType): boolean {

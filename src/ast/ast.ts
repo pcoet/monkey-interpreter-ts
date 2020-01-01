@@ -13,6 +13,9 @@ export interface Expression extends Node {
   expressionNode: () => void;
 }
 
+type LeftExpTypes = Expression | undefined;
+type RightExpTypes = Expression | undefined | null;
+
 export class Program implements Node {
   Statements: Statement[];
 
@@ -160,7 +163,7 @@ export class IntegerLiteral implements Expression {
 export class PrefixExpression implements Expression {
   public Token: Token;
   public Operator: string | undefined;
-  public Right: Expression | undefined | null;
+  public Right: RightExpTypes;
 
   constructor(token: Token, operator?: string, right?: Expression) {
     this.Token = token;
@@ -186,9 +189,9 @@ export class PrefixExpression implements Expression {
 
 export class InfixExpression implements Expression {
   public Token: Token;
-  public Left: Expression | undefined;
+  public Left: LeftExpTypes;
   public Operator: string | undefined;
-  public Right: Expression | undefined | null;
+  public Right: RightExpTypes;
 
   constructor(token: Token, left?: Expression, operator?: string, right?: Expression) {
     this.Token = token;
@@ -214,7 +217,7 @@ export class InfixExpression implements Expression {
   }
 }
 
-export class BooleanExpression implements Expression {
+export class BooleanLiteral implements Expression {
   public Token: Token; // the token.IDENT token
   public Value: boolean;
 

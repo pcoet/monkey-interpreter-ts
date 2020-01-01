@@ -1,5 +1,5 @@
 export {
-  BooleanExpression,
+  BooleanLiteral,
   Expression,
   ExpressionStatement,
   Identifier,
