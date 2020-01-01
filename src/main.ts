@@ -4,11 +4,12 @@ import { Repl } from './repl';
 
 function main(): void {
   try {
-    const username = os.userInfo().username;
+    const { username } = os.userInfo();
+    const { stdin, stdout } = process;
     console.log(`Hello ${username}! This is the Monkey programming language!\n`);
     console.log('Feel free to type in commands.\n');
-    Repl.start(process.stdin, process.stdout);
-  } catch(err) {
+    Repl.start(stdin, stdout);
+  } catch (err) {
     console.error(err);
   }
 }

@@ -8,12 +8,14 @@
     "@typescript-eslint"
   ],
   "extends": [
+    "airbnb-typescript/base",
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
     "plugin:@typescript-eslint/recommended-requiring-type-checking"
   ],
   "rules": {
-    "quotes": ["error", "single"]
+    "quotes": ["error", "single"],
+    "no-console": 0
   }
 }
