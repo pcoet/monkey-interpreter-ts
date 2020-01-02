@@ -236,3 +236,63 @@ export class BooleanLiteral implements Expression {
     return this.Token.Literal;
   }
 }
+
+export class BlockStatement implements Statement {
+  public Token: Token;
+  public Statements: Statement[];
+
+  constructor(token: Token, statements?: Statement[]) {
+    this.Token = token;
+    this.Statements = statements || [];
+  }
+
+  statementNode = (): void => {};
+
+  public TokenLiteral(): string {
+    return this.Token.Literal;
+  }
+
+  String(): string {
+    let out = '';
+    this.Statements.forEach((s) => {
+      out += s.String();
+    });
+    return out;
+  }
+}
+
+export class IfExpression implements Expression {
+  public Token: Token;
+  public Condition: Expression | undefined;
+  public Consequence: BlockStatement | undefined;
+  public Alternative: BlockStatement | undefined;
+
+  constructor(
+    token: Token,
+    condition?: Expression,
+    consequence?: BlockStatement,
+    alternative?: BlockStatement,
+  ) {
+    this.Token = token;
+    this.Condition = condition;
+    this.Consequence = consequence;
+    this.Alternative = alternative;
+  }
+
+  expressionNode = (): void => {};
+
+  TokenLiteral(): string {
+    return this.Token.Literal;
+  }
+
+  String(): string {
+    let out = '';
+    out += this.Condition ? `${this.Condition.String()} ` : '';
+    out += this.Consequence ? this.Consequence.String() : '';
+
+    if (this.Alternative) {
+      out += `else ${this.Alternative.String()}`;
+    }
+    return out;
+  }
+}

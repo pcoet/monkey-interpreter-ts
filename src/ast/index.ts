@@ -1,8 +1,10 @@
 export {
+  BlockStatement,
   BooleanLiteral,
   Expression,
   ExpressionStatement,
   Identifier,
+  IfExpression,
   InfixExpression,
   IntegerLiteral,
   LetStatement,

@@ -5,6 +5,7 @@ import {
   Expression,
   ExpressionStatement,
   Identifier,
+  IfExpression,
   InfixExpression,
   IntegerLiteral,
   LetStatement,
@@ -70,18 +71,21 @@ function testLiteralExpression(exp: Expression, expected: LeftRight): void {
 }
 
 function testInfixExpression(
-  exp: InfixExpression,
+  exp: Expression,
   left: LeftRight,
   operator: string,
   right: LeftRight,
 ): void {
-  const { Left, Operator, Right } = exp;
-  expect(!!Left && !!Right).toBe(true);
-  // On InfixExpression, Left can be undefined and Right can be null or undefined, so we test...
-  if (!!Left && !!Right) {
-    testLiteralExpression(Left, left);
-    expect(Operator).toEqual(operator);
-    testLiteralExpression(Right, right);
+  expect(exp instanceof InfixExpression).toBe(true);
+  if (exp instanceof InfixExpression) {
+    const { Left, Operator, Right } = exp;
+    expect(!!Left && !!Right).toBe(true);
+    // On InfixExpression, Left can be undefined and Right can be null or undefined, so we test...
+    if (!!Left && !!Right) {
+      testLiteralExpression(Left, left);
+      expect(Operator).toEqual(operator);
+      testLiteralExpression(Right, right);
+    }
   }
 }
 
@@ -344,6 +348,26 @@ describe('Parser', () => {
         input: '3 < 5 == true',
         expected: '((3 < 5) == true)',
       },
+      {
+        input: '1 + (2 + 3) + 4',
+        expected: '((1 + (2 + 3)) + 4)',
+      },
+      {
+        input: '(5 + 5) * 2',
+        expected: '((5 + 5) * 2)',
+      },
+      {
+        input: '2 / (5 + 5)',
+        expected: '(2 / (5 + 5))',
+      },
+      {
+        input: '-(5 + 5)',
+        expected: '(-(5 + 5))',
+      },
+      {
+        input: '!(true == true)',
+        expected: '(!(true == true))',
+      },
     ];
 
     tests.forEach((tt) => {
@@ -359,16 +383,41 @@ describe('Parser', () => {
       });
     });
   });
-});
 
-describe('Test boolean expression', () => {
-  const tests = [
-    { input: 'true', expectedBoolean: true },
-    { input: 'false', expectedBoolean: false },
-  ];
+  describe('Test boolean expression', () => {
+    const tests = [
+      { input: 'true', expectedBoolean: true },
+      { input: 'false', expectedBoolean: false },
+    ];
 
-  tests.forEach((tt) => {
-    const { input, expectedBoolean } = tt;
+    tests.forEach((tt) => {
+      const { input, expectedBoolean } = tt;
+      test(`${input}`, () => {
+        const l = new Lexer(input);
+        const p = new Parser(l);
+        const program = p.ParseProgram();
+        checkParserErrors(p);
+
+        if (program.Statements.length !== 1) {
+          throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
+        }
+
+        const stmt = program.Statements[0];
+        expect(stmt instanceof ExpressionStatement).toEqual(true);
+        if (stmt instanceof ExpressionStatement) {
+          const exp = stmt.Expression;
+          expect(exp instanceof BooleanLiteral).toEqual(true);
+          if (exp instanceof BooleanLiteral) {
+            const { Value: boolean } = exp;
+            expect(boolean).toEqual(expectedBoolean);
+          }
+        }
+      });
+    });
+  });
+
+  describe('Test if expression', () => {
+    const input = 'if (x < y) { x }';
     test(`${input}`, () => {
       const l = new Lexer(input);
       const p = new Parser(l);
@@ -383,10 +432,66 @@ describe('Test boolean expression', () => {
       expect(stmt instanceof ExpressionStatement).toEqual(true);
       if (stmt instanceof ExpressionStatement) {
         const exp = stmt.Expression;
-        expect(exp instanceof BooleanLiteral).toEqual(true);
-        if (exp instanceof BooleanLiteral) {
-          const { Value: boolean } = exp;
-          expect(boolean).toEqual(expectedBoolean);
+        expect(exp instanceof IfExpression).toEqual(true);
+        if (exp instanceof IfExpression) {
+          testInfixExpression(exp.Condition, 'x', '<', 'y');
+          expect(exp.Consequence.Statements.length).toEqual(1);
+          const consequence = exp.Consequence.Statements[0];
+          expect(consequence instanceof ExpressionStatement).toBe(true);
+          if (consequence instanceof ExpressionStatement) {
+            const consequenceExp = consequence.Expression;
+            expect(consequenceExp).not.toBeFalsy();
+            if (consequenceExp) {
+              testIdentifier(consequenceExp, 'x');
+            }
+          }
+          expect(exp.Alternative).toBeFalsy();
+        }
+      }
+    });
+  });
+
+  describe('Test if else expression', () => {
+    const input = 'if (x < y) { x } else { y }';
+
+    test(`${input}`, () => {
+      const l = new Lexer(input);
+      const p = new Parser(l);
+      const program = p.ParseProgram();
+      checkParserErrors(p);
+
+      if (program.Statements.length !== 1) {
+        throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
+      }
+      const stmt = program.Statements[0];
+      expect(stmt instanceof ExpressionStatement).toEqual(true);
+      if (stmt instanceof ExpressionStatement) {
+        const exp = stmt.Expression;
+        expect(exp instanceof IfExpression).toEqual(true);
+        if (exp instanceof IfExpression) {
+          testInfixExpression(exp.Condition, 'x', '<', 'y');
+          expect(exp.Consequence.Statements.length).toEqual(1);
+          const consequence = exp.Consequence.Statements[0];
+          expect(consequence instanceof ExpressionStatement).toBe(true);
+          if (consequence instanceof ExpressionStatement) {
+            const consequenceExp = consequence.Expression;
+            expect(consequenceExp).not.toBeFalsy();
+            if (consequenceExp) {
+              testIdentifier(consequenceExp, 'x');
+            }
+          }
+          expect(exp.Alternative && exp.Alternative.Statements.length === 1).toBe(true);
+          if (exp.Alternative && exp.Alternative.Statements.length === 1) {
+            const alternative = exp.Alternative.Statements[0];
+            expect(alternative instanceof ExpressionStatement).toBe(true);
+            if (alternative instanceof ExpressionStatement) {
+              const alternativeExp = alternative.Expression;
+              expect(alternativeExp).not.toBeFalsy();
+              if (alternativeExp) {
+                testIdentifier(alternativeExp, 'y');
+              }
+            }
+          }
         }
       }
     });

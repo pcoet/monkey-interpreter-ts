@@ -11,6 +11,8 @@ import {
   Program,
   ReturnStatement,
   Statement,
+  IfExpression,
+  BlockStatement,
 } from '../ast';
 import { Token, TokenType } from '../token';
 
@@ -54,6 +56,9 @@ export class Parser {
     this.parseInfixExpression = this.parseInfixExpression.bind(this);
     this.parseExpression = this.parseExpression.bind(this);
     this.parseBoolean = this.parseBoolean.bind(this);
+    this.parseGroupedExpression = this.parseGroupedExpression.bind(this);
+    this.parseIfExpression = this.parseIfExpression.bind(this);
+    this.parseBlockStatement = this.parseBlockStatement.bind(this);
     this.l = lexer;
     this.curToken = this.l.nextToken(); // replaces first call to this.nextToken();
     this.peekToken = this.l.nextToken(); // replaces second call to this.nextToken();
@@ -64,6 +69,8 @@ export class Parser {
     this.registerPrefix(TokenType.MINUS, this.parsePrefixExpression);
     this.registerPrefix(TokenType.TRUE, this.parseBoolean);
     this.registerPrefix(TokenType.FALSE, this.parseBoolean);
+    this.registerPrefix(TokenType.LPAREN, this.parseGroupedExpression);
+    this.registerPrefix(TokenType.IF, this.parseIfExpression);
     this.infixParseFns = new Map();
     this.registerInfix(TokenType.PLUS, this.parseInfixExpression);
     this.registerInfix(TokenType.MINUS, this.parseInfixExpression);
@@ -205,6 +212,65 @@ export class Parser {
 
   parseBoolean(): Expression {
     return new BooleanLiteral(this.curToken, this.curTokenIs(TokenType.TRUE));
+  }
+
+  parseGroupedExpression(): Expression | null {
+    this.nextToken();
+    const exp = this.parseExpression(Precedence.LOWEST);
+    if (!this.expectPeek(TokenType.RPAREN)) {
+      return null;
+    }
+    return exp;
+  }
+
+  parseBlockStatement(): BlockStatement {
+    const block = new BlockStatement(this.curToken);
+
+    this.nextToken();
+
+    while (!this.curTokenIs(TokenType.RBRACE) && !this.curTokenIs(TokenType.EOF)) {
+      const stmt = this.parseStatement();
+      if (stmt) {
+        block.Statements.push(stmt);
+        this.nextToken();
+      }
+    }
+
+    return block;
+  }
+
+  parseIfExpression(): Expression | null {
+    const expression = new IfExpression(this.curToken);
+
+    if (!this.expectPeek(TokenType.LPAREN)) {
+      return null;
+    }
+
+    this.nextToken();
+
+    expression.Condition = this.parseExpression(Precedence.LOWEST) || undefined;
+
+    if (!this.expectPeek(TokenType.RPAREN)) {
+      return null;
+    }
+
+    if (!this.expectPeek(TokenType.LBRACE)) {
+      return null;
+    }
+
+    expression.Consequence = this.parseBlockStatement();
+
+    if (this.peekTokenIs(TokenType.ELSE)) {
+      this.nextToken();
+
+      if (!this.expectPeek(TokenType.LBRACE)) {
+        return null;
+      }
+
+      expression.Alternative = this.parseBlockStatement() || undefined;
+    }
+
+    return expression;
   }
 
   curTokenIs(t: TokenType): boolean {
