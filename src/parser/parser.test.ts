@@ -2,6 +2,7 @@
 import { Parser } from './parser';
 import {
   BooleanLiteral,
+  CallExpression,
   Expression,
   ExpressionStatement,
   FunctionLiteral,
@@ -369,6 +370,18 @@ describe('Parser', () => {
         input: '!(true == true)',
         expected: '(!(true == true))',
       },
+      {
+        input: 'a + add(b * c) + d',
+        expected: '((a + add((b * c))) + d)',
+      },
+      {
+        input: 'add(a, b, 1, 2 * 3, 4 + 5, add(6, 7 * 8))',
+        expected: 'add(a, b, 1, (2 * 3), (4 + 5), add(6, (7 * 8)))',
+      },
+      {
+        input: 'add(a + b + c * d / f + g)',
+        expected: 'add((((a + b) + ((c * d) / f)) + g))',
+      },
     ];
 
     tests.forEach((tt) => {
@@ -576,6 +589,37 @@ describe('Parser', () => {
           testLiteralExpression(param, ident);
         });
       });
+    });
+  });
+
+  describe('Test call expression parsing', () => {
+    const input = 'add(1, 2 * 3, 4 + 5);';
+    test(`${input}`, () => {
+      const l = new Lexer(input);
+      const p = new Parser(l);
+      const program = p.ParseProgram();
+      checkParserErrors(p);
+
+      if (program.Statements.length !== 1) {
+        throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
+      }
+      const stmt = program.Statements[0];
+      if (!(stmt instanceof ExpressionStatement)) {
+        throw new Error(`${stmt} is not an ExpressionStatement`);
+      }
+      const exp = stmt.Expression;
+      if (!(exp instanceof CallExpression)) {
+        throw new Error(`${exp} is not a CallExpression`);
+      }
+      testIdentifier(exp.Function, 'add');
+
+      if (!exp.Arguments) {
+        throw new Error('Arguments must not be null or undefined');
+      }
+      expect(exp.Arguments.length).toBe(3);
+      testLiteralExpression(exp.Arguments[0], 1);
+      testInfixExpression(exp.Arguments[1], 2, '*', 3);
+      testInfixExpression(exp.Arguments[2], 4, '+', 5);
     });
   });
 });

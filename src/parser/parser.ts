@@ -14,6 +14,7 @@ import {
   IfExpression,
   BlockStatement,
   FunctionLiteral,
+  CallExpression,
 } from '../ast';
 import { Token, TokenType } from '../token';
 
@@ -39,6 +40,7 @@ const precedences = new Map<TokenType, Precedence>([
   [TokenType.MINUS, Precedence.SUM],
   [TokenType.SLASH, Precedence.PRODUCT],
   [TokenType.ASTERISK, Precedence.PRODUCT],
+  [TokenType.LPAREN, Precedence.CALL],
 ]);
 
 export class Parser {
@@ -61,6 +63,8 @@ export class Parser {
     this.parseIfExpression = this.parseIfExpression.bind(this);
     this.parseBlockStatement = this.parseBlockStatement.bind(this);
     this.parseFunctionLiteral = this.parseFunctionLiteral.bind(this);
+    this.parseCallExpression = this.parseCallExpression.bind(this);
+    this.parseCallArguments = this.parseCallArguments.bind(this);
     this.l = lexer;
     this.curToken = this.l.nextToken(); // replaces first call to this.nextToken();
     this.peekToken = this.l.nextToken(); // replaces second call to this.nextToken();
@@ -83,6 +87,7 @@ export class Parser {
     this.registerInfix(TokenType.NOT_EQ, this.parseInfixExpression);
     this.registerInfix(TokenType.LT, this.parseInfixExpression);
     this.registerInfix(TokenType.GT, this.parseInfixExpression);
+    this.registerInfix(TokenType.LPAREN, this.parseCallExpression);
   }
 
   public nextToken(): void {
@@ -329,6 +334,43 @@ export class Parser {
     lit.Body = this.parseBlockStatement();
 
     return lit;
+  }
+
+  parseCallArguments(): Expression[] | null {
+    const args: Expression[] = [];
+
+    if (this.peekTokenIs(TokenType.RPAREN)) {
+      this.nextToken();
+      return args;
+    }
+
+    this.nextToken();
+
+    let exp = this.parseExpression(Precedence.LOWEST);
+    if (exp) {
+      args.push(exp);
+    }
+
+    while (this.peekTokenIs(TokenType.COMMA)) {
+      this.nextToken();
+      this.nextToken();
+      exp = this.parseExpression(Precedence.LOWEST);
+      if (exp) {
+        args.push(exp);
+      }
+    }
+
+    if (!this.expectPeek(TokenType.RPAREN)) {
+      return null;
+    }
+
+    return args;
+  }
+
+  parseCallExpression(func: Expression): Expression {
+    const exp = new CallExpression(this.curToken, func);
+    exp.Arguments = this.parseCallArguments();
+    return exp;
   }
 
   curTokenIs(t: TokenType): boolean {

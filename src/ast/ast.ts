@@ -329,3 +329,37 @@ export class FunctionLiteral implements Expression {
     return out;
   }
 }
+
+export class CallExpression implements Expression {
+  public Token: Token;
+  public Function: Expression;
+  public Arguments: Expression[] | undefined | null;
+
+  constructor(token: Token, func: Expression, args?: Expression[]) {
+    this.Token = token;
+    this.Function = func;
+    this.Arguments = args;
+  }
+
+  expressionNode = (): void => {};
+
+  TokenLiteral(): string {
+    return this.Token.Literal;
+  }
+
+  String(): string {
+    let out = '';
+    const args: string[] = [];
+    if (this.Arguments) {
+      this.Arguments.forEach((arg) => {
+        args.push(arg.String());
+      });
+    }
+    out += this.Function.String();
+    out += '(';
+    out += args.join(', ');
+    out += ')';
+
+    return out;
+  }
+}

@@ -1,6 +1,7 @@
 export {
   BlockStatement,
   BooleanLiteral,
+  CallExpression,
   Expression,
   ExpressionStatement,
   FunctionLiteral,
