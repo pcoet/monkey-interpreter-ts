@@ -62,7 +62,7 @@ export class Identifier implements Expression {
 export class LetStatement implements Statement {
   public Token: Token;
   public Name: Identifier | undefined;
-  public Value: Expression | undefined;
+  public Value: Expression | undefined | null;
 
   constructor(token: Token, name?: Identifier, value?: Expression) {
     this.Token = token;
@@ -88,7 +88,7 @@ export class LetStatement implements Statement {
 
 export class ReturnStatement implements Statement {
   public Token: Token;
-  public ReturnValue: Expression | undefined;
+  public ReturnValue: Expression | undefined | null;
 
   constructor(token: Token, returnValue?: Expression) {
     this.Token = token;

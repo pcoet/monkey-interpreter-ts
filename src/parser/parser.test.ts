@@ -13,6 +13,7 @@ import {
   LetStatement,
   PrefixExpression,
   ReturnStatement,
+  Statement,
 } from '../ast';
 import { Lexer } from '../lexer';
 
@@ -91,46 +92,30 @@ function testInfixExpression(
   }
 }
 
+function testLetStatement(s: Statement, name: string): void {
+  expect(s.TokenLiteral()).toEqual('let');
+  if (!(s instanceof LetStatement)) {
+    throw new Error(`${s} must be an instance of LetStatement`);
+  }
+
+  if (!s.Name) {
+    throw new Error('Name must be defined.');
+  }
+
+  expect(s.Name.Value).toEqual(name);
+  expect(s.Name.TokenLiteral()).toEqual(name);
+}
+
 describe('Parser', () => {
-  describe('Test LetStatement', () => {
+  describe('Test let statements', () => {
     const tests = [
       { input: 'let x = 5;', expectedIdentifier: 'x', expectedValue: 5 },
-      { input: 'let y = 10;', expectedIdentifier: 'y', expectedValue: 10 },
-      { input: 'let foobar = 838383;', expectedIdentifier: 'foobar', expectedValue: 838383 },
+      { input: 'let y = true;', expectedIdentifier: 'y', expectedValue: true },
+      { input: 'let foobar = y;', expectedIdentifier: 'foobar', expectedValue: 'y' },
     ];
 
     tests.forEach((tt) => {
-      const l = new Lexer(tt.input);
-      const p = new Parser(l);
-      const program = p.ParseProgram();
-      checkParserErrors(p);
-
-      if (program.Statements.length !== 1) {
-        throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
-      }
-
-      const stmt = program.Statements[0];
-      test('test let statement', () => {
-        const name = tt.expectedIdentifier;
-        expect(stmt.TokenLiteral()).toEqual('let');
-        expect(stmt instanceof LetStatement && !!stmt.Name).toEqual(true);
-        if (stmt instanceof LetStatement && !!stmt.Name) {
-          expect(stmt.Name.Value).toEqual(name);
-          expect(stmt.Name.TokenLiteral()).toEqual(name);
-        }
-      });
-    });
-  });
-
-  describe('Test ReturnStatement', () => {
-    const tests = [
-      { input: 'return 5;', expectedValue: 5 },
-      { input: 'return 10;', expectedValue: 10 },
-      { input: 'return 993322;', expectedValue: 993322 },
-    ];
-
-    tests.forEach((tt) => {
-      test('', () => {
+      test(`${tt.input}`, () => {
         const l = new Lexer(tt.input);
         const p = new Parser(l);
         const program = p.ParseProgram();
@@ -141,13 +126,50 @@ describe('Parser', () => {
         }
 
         const stmt = program.Statements[0];
-        expect(stmt instanceof ReturnStatement).toEqual(true);
-        expect(stmt.TokenLiteral()).toEqual('return');
-        /*
-        if (stmt instanceof ReturnStatement) {
-          expect(stmt.ReturnValue).toEqual(tt.expectedValue);
+        testLetStatement(stmt, tt.expectedIdentifier);
+        if (!(stmt instanceof LetStatement)) {
+          throw new Error(`${stmt} must be an instance of LetStatement`);
         }
-        */
+        const val = stmt.Value;
+
+        if (!val) {
+          throw new Error('Value must be defined');
+        }
+        testLiteralExpression(val, tt.expectedValue);
+      });
+    });
+  });
+
+  describe('Test return statements', () => {
+    const tests = [
+      { input: 'return 5;', expectedValue: 5 },
+      { input: 'return true;', expectedValue: true },
+      { input: 'return foobar;', expectedValue: 'foobar' },
+    ];
+
+    tests.forEach((tt) => {
+      test(`${tt.input}`, () => {
+        const l = new Lexer(tt.input);
+        const p = new Parser(l);
+        const program = p.ParseProgram();
+        checkParserErrors(p);
+
+        if (program.Statements.length !== 1) {
+          throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
+        }
+
+        const stmt = program.Statements[0];
+        if (!(stmt instanceof ReturnStatement)) {
+          throw new Error(`Expected ${stmt} to be a ReturnStatement`);
+        }
+
+        expect(stmt.TokenLiteral()).toEqual('return');
+
+        if (!(stmt.ReturnValue)) {
+          throw new Error(`Expected ${stmt} to have a ReturnValue`);
+        }
+
+        testLiteralExpression(stmt.ReturnValue, tt.expectedValue);
       });
     });
   });
