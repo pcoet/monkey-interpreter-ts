@@ -27,3 +27,4 @@ As an example, you can use this input: `let add = fn(x, y) { x + y; };`
   * token - fix naming conventions (e.g. TokenTypes -> TokenType)
   * repl - figure out how to test this
 * Refactor 'Let statements' test in parser.test.ts to match parser_test.go.
+* Refactor parser.test.ts to remove nesting; instead of `if` statements, throw an error if expected prop doesn't exist.

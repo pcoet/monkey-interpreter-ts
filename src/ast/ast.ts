@@ -296,3 +296,36 @@ export class IfExpression implements Expression {
     return out;
   }
 }
+
+export class FunctionLiteral implements Expression {
+  public Token: Token;
+  public Parameters: Identifier[] | undefined | null;
+  public Body: BlockStatement | undefined;
+
+  constructor(token: Token, params?: Identifier[], body?: BlockStatement) {
+    this.Token = token;
+    this.Parameters = params;
+    this.Body = body;
+  }
+
+  expressionNode = (): void => {};
+
+  TokenLiteral(): string {
+    return this.Token.Literal;
+  }
+
+  String(): string {
+    let out = '';
+    const params: string[] = [];
+    this.Parameters?.forEach((param) => {
+      params.push(param.String());
+    });
+    out += this.TokenLiteral();
+    out += '(';
+    out += params.join(', ');
+    out += ') ';
+    out += this.Body ? this.Body.String() : '';
+
+    return out;
+  }
+}

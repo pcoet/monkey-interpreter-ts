@@ -13,6 +13,7 @@ import {
   Statement,
   IfExpression,
   BlockStatement,
+  FunctionLiteral,
 } from '../ast';
 import { Token, TokenType } from '../token';
 
@@ -59,6 +60,7 @@ export class Parser {
     this.parseGroupedExpression = this.parseGroupedExpression.bind(this);
     this.parseIfExpression = this.parseIfExpression.bind(this);
     this.parseBlockStatement = this.parseBlockStatement.bind(this);
+    this.parseFunctionLiteral = this.parseFunctionLiteral.bind(this);
     this.l = lexer;
     this.curToken = this.l.nextToken(); // replaces first call to this.nextToken();
     this.peekToken = this.l.nextToken(); // replaces second call to this.nextToken();
@@ -71,6 +73,7 @@ export class Parser {
     this.registerPrefix(TokenType.FALSE, this.parseBoolean);
     this.registerPrefix(TokenType.LPAREN, this.parseGroupedExpression);
     this.registerPrefix(TokenType.IF, this.parseIfExpression);
+    this.registerPrefix(TokenType.FUNCTION, this.parseFunctionLiteral);
     this.infixParseFns = new Map();
     this.registerInfix(TokenType.PLUS, this.parseInfixExpression);
     this.registerInfix(TokenType.MINUS, this.parseInfixExpression);
@@ -273,6 +276,61 @@ export class Parser {
     return expression;
   }
 
+  parseInfixExpression(left: Expression): Expression {
+    const expression = new InfixExpression(this.curToken, left, this.curToken.Literal);
+    const precedence = this.curPrecedence();
+
+    this.nextToken();
+
+    expression.Right = this.parseExpression(precedence);
+    return expression;
+  }
+
+  parseFunctionParameters(): Identifier[] | null {
+    const identifiers: Identifier[] = [];
+
+    if (this.peekTokenIs(TokenType.RPAREN)) {
+      this.nextToken();
+      return identifiers;
+    }
+
+    this.nextToken();
+
+    let ident = new Identifier(this.curToken, this.curToken.Literal);
+    identifiers.push(ident);
+
+    while (this.peekTokenIs(TokenType.COMMA)) {
+      this.nextToken();
+      this.nextToken();
+      ident = new Identifier(this.curToken, this.curToken.Literal);
+      identifiers.push(ident);
+    }
+
+    if (!this.expectPeek(TokenType.RPAREN)) {
+      return null;
+    }
+
+    return identifiers;
+  }
+
+  parseFunctionLiteral(): Expression | null {
+    const lit = new FunctionLiteral(this.curToken);
+
+    if (!this.expectPeek(TokenType.LPAREN)) {
+      return null;
+    }
+
+    lit.Parameters = this.parseFunctionParameters();
+
+    if (!this.expectPeek(TokenType.LBRACE)) {
+      return null;
+    }
+
+    lit.Body = this.parseBlockStatement();
+
+    return lit;
+  }
+
   curTokenIs(t: TokenType): boolean {
     return !!this.curToken && this.curToken.Type === t;
   }
@@ -288,16 +346,6 @@ export class Parser {
     }
     this.peekError(t);
     return false;
-  }
-
-  parseInfixExpression(left: Expression): Expression {
-    const expression = new InfixExpression(this.curToken, left, this.curToken.Literal);
-    const precedence = this.curPrecedence();
-
-    this.nextToken();
-
-    expression.Right = this.parseExpression(precedence);
-    return expression;
   }
 
   peekError(t: TokenType): void {

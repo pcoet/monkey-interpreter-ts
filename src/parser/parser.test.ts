@@ -4,6 +4,7 @@ import {
   BooleanLiteral,
   Expression,
   ExpressionStatement,
+  FunctionLiteral,
   Identifier,
   IfExpression,
   InfixExpression,
@@ -434,7 +435,9 @@ describe('Parser', () => {
         const exp = stmt.Expression;
         expect(exp instanceof IfExpression).toEqual(true);
         if (exp instanceof IfExpression) {
+          if (exp.Condition === undefined) { throw new Error('Condition must be initialized'); }
           testInfixExpression(exp.Condition, 'x', '<', 'y');
+          if (exp.Consequence === undefined) { throw new Error('Consequence must be initialized'); }
           expect(exp.Consequence.Statements.length).toEqual(1);
           const consequence = exp.Consequence.Statements[0];
           expect(consequence instanceof ExpressionStatement).toBe(true);
@@ -469,7 +472,9 @@ describe('Parser', () => {
         const exp = stmt.Expression;
         expect(exp instanceof IfExpression).toEqual(true);
         if (exp instanceof IfExpression) {
+          if (exp.Condition === undefined) { throw new Error('Condition must be initialized'); }
           testInfixExpression(exp.Condition, 'x', '<', 'y');
+          if (exp.Consequence === undefined) { throw new Error('Consequence must be initialized'); }
           expect(exp.Consequence.Statements.length).toEqual(1);
           const consequence = exp.Consequence.Statements[0];
           expect(consequence instanceof ExpressionStatement).toBe(true);
@@ -494,6 +499,83 @@ describe('Parser', () => {
           }
         }
       }
+    });
+  });
+
+  describe('Test function literal parsing', () => {
+    const input = 'fn(x, y) { x + y; }';
+    test(`${input}`, () => {
+      const l = new Lexer(input);
+      const p = new Parser(l);
+      const program = p.ParseProgram();
+      checkParserErrors(p);
+
+      if (program.Statements.length !== 1) {
+        throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
+      }
+      const stmt = program.Statements[0];
+      if (!(stmt instanceof ExpressionStatement)) {
+        throw new Error(`${stmt} is not an ExpressionStatement`);
+      }
+      const func = stmt.Expression;
+      expect(func instanceof FunctionLiteral).toBe(true);
+      if (func instanceof FunctionLiteral) {
+        if (!func.Parameters) { throw new Error('Parameters must not be null or undefined'); }
+        expect(func.Parameters.length).toBe(2);
+        if (func.Parameters.length === 2) {
+          testLiteralExpression(func.Parameters[0], 'x');
+          testLiteralExpression(func.Parameters[1], 'y');
+        }
+        if (func.Body === undefined) { throw new Error('Body must be initialized'); }
+        expect(func.Body.Statements.length).toBe(1);
+        const bodyStmt = func.Body.Statements[0];
+        expect(bodyStmt instanceof ExpressionStatement).toBe(true);
+        if (!(bodyStmt instanceof ExpressionStatement)) { throw new Error(); }
+        if (bodyStmt.Expression === undefined) { throw new Error('Expression must be initialized'); }
+        testInfixExpression(bodyStmt.Expression, 'x', '+', 'y');
+      }
+    });
+  });
+
+  describe('Test function parameter parsing', () => {
+    const tests = [
+      { input: 'fn() {};', expectedParams: [] },
+      { input: 'fn(x) {};', expectedParams: ['x'] },
+      { input: 'fn(x, y, z) {};', expectedParams: ['x', 'y', 'z'] },
+    ];
+
+    tests.forEach((tt) => {
+      test(`${tt.input}`, () => {
+        const l = new Lexer(tt.input);
+        const p = new Parser(l);
+        const program = p.ParseProgram();
+        checkParserErrors(p);
+
+        const stmt = program.Statements[0];
+        if (!(stmt instanceof ExpressionStatement)) {
+          throw new Error(`${stmt} is not an ExpressionStatement`);
+        }
+        const func = stmt.Expression;
+        if (!(func instanceof FunctionLiteral)) {
+          throw new Error(`${func} is not a FunctionLiteral`);
+        }
+
+        if (!func.Parameters) {
+          throw new Error('Paramaters must not be null or undefined');
+        }
+
+        expect(func.Parameters.length).toEqual(tt.expectedParams.length);
+        tt.expectedParams.forEach((ident, i) => {
+          if (!func.Parameters) {
+            throw new Error('Paramaters must not be null or undefined');
+          }
+          const param = func.Parameters[i];
+          if (!param) {
+            throw new Error('Param must exist to be tested');
+          }
+          testLiteralExpression(param, ident);
+        });
+      });
     });
   });
 });

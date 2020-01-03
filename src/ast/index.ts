@@ -3,6 +3,7 @@ export {
   BooleanLiteral,
   Expression,
   ExpressionStatement,
+  FunctionLiteral,
   Identifier,
   IfExpression,
   InfixExpression,
