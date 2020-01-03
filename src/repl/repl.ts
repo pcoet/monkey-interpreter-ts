@@ -1,7 +1,15 @@
+/* eslint-disable no-useless-escape */
 import * as readline from 'readline';
 
 import { Lexer } from '../lexer';
-import { TokenType } from '../token';
+import { Parser } from '../parser';
+
+function printParseErrors(errors: Error[]): void {
+  console.log('Parser errors:\n');
+  errors.forEach((err) => {
+    console.log(`\t${err.message}\n`);
+  });
+}
 
 export class Repl {
   static start(stdin: NodeJS.ReadStream, stdout: NodeJS.WriteStream): void {
@@ -15,12 +23,15 @@ export class Repl {
     rl.prompt();
     rl.on('line', (line) => {
       const l = new Lexer(line);
-      let tok = l.nextToken();
+      const p = new Parser(l);
+      const program = p.ParseProgram();
 
-      while (tok.Type !== TokenType.EOF) {
-        console.log(tok);
-        tok = l.nextToken();
+      if (p.Errors().length !== 0) {
+        printParseErrors(p.Errors());
+      } else {
+        console.log(`${program.String()}\n`);
       }
+
       rl.prompt();
     }).on('close', () => {
       console.log('Exiting...');

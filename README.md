@@ -17,7 +17,15 @@ First install and build, the run:
 
     npm start
 
-As an example, you can use this input: `let add = fn(x, y) { x + y; };`
+Input examples:
+
+    let x = 1 * 2 * 3 * 4 * 5;
+    x * y / 2 + 3 * 8 - 123
+    true == false
+
+And this should produce an error:
+
+    let x 12 * 3;
 
 ## TODOs
 
