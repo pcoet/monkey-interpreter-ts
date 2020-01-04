@@ -29,10 +29,5 @@ And this should produce an error:
 
 ## TODOs
 
-* Refactor the following modules to use classes, with helper functions on class:
-  * lexer
-    * Consider creating a Char type: https://stackoverflow.com/questions/42678891/typescript-character-type
-  * token - fix naming conventions (e.g. TokenTypes -> TokenType)
-  * repl - figure out how to test this
-* Refactor 'Let statements' test in parser.test.ts to match parser_test.go.
-* Refactor parser.test.ts to remove nesting; instead of `if` statements, throw an error if expected prop doesn't exist.
+* Finish implementing. Start with Evaluation.
+* Consider creating a Char type: https://stackoverflow.com/questions/42678891/typescript-character-type

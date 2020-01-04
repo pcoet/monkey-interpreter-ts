@@ -23,7 +23,7 @@ function checkParserErrors(p: Parser): void {
     return;
   }
 
-  let errMsg = '';
+  let errMsg = `Parser has ${errors.length} errors:\n`;
   errors.forEach((err, i) => {
     errMsg += `Parser error ${i}: ${err.message}\n`;
   });
@@ -31,27 +31,27 @@ function checkParserErrors(p: Parser): void {
 }
 
 function testIntegerLiteral(intLit: Expression, value: number): void {
-  expect(intLit instanceof IntegerLiteral).toBe(true);
-  if (intLit instanceof IntegerLiteral) {
-    expect(intLit.Value).toEqual(value);
-    expect(intLit.TokenLiteral()).toEqual(value.toString());
+  if (!(intLit instanceof IntegerLiteral)) {
+    throw new Error('Expected object to be instance of IntegerLiteral');
   }
+  expect(intLit.Value).toEqual(value);
+  expect(intLit.TokenLiteral()).toEqual(value.toString());
 }
 
 function testBooleanLiteral(boolLit: Expression, value: boolean): void {
-  expect(boolLit instanceof BooleanLiteral).toBe(true);
-  if (boolLit instanceof BooleanLiteral) {
-    expect(boolLit.Value).toEqual(value);
-    expect(boolLit.TokenLiteral()).toEqual(value.toString());
+  if (!(boolLit instanceof BooleanLiteral)) {
+    throw new Error('Expected object to be instance of BooleanLiteral');
   }
+  expect(boolLit.Value).toEqual(value);
+  expect(boolLit.TokenLiteral()).toEqual(value.toString());
 }
 
 function testIdentifier(ident: Expression, value: string): void {
-  expect(ident instanceof Identifier).toBe(true);
-  if (ident instanceof Identifier) {
-    expect(ident.Value).toEqual(value);
-    expect(ident.TokenLiteral()).toEqual(value);
+  if (!(ident instanceof Identifier)) {
+    throw new Error('Expected object to be instance of Identifier');
   }
+  expect(ident.Value).toEqual(value);
+  expect(ident.TokenLiteral()).toEqual(value);
 }
 
 type LeftRight = string | number | boolean;
@@ -79,16 +79,16 @@ function testInfixExpression(
   operator: string,
   right: LeftRight,
 ): void {
-  expect(exp instanceof InfixExpression).toBe(true);
-  if (exp instanceof InfixExpression) {
-    const { Left, Operator, Right } = exp;
-    expect(!!Left && !!Right).toBe(true);
-    // On InfixExpression, Left can be undefined and Right can be null or undefined, so we test...
-    if (!!Left && !!Right) {
-      testLiteralExpression(Left, left);
-      expect(Operator).toEqual(operator);
-      testLiteralExpression(Right, right);
-    }
+  if (!(exp instanceof InfixExpression)) {
+    throw new Error('Expected object to be instance of InfixExpression');
+  }
+  const { Left, Operator, Right } = exp;
+  expect(!!Left && !!Right).toBe(true);
+  // On InfixExpression, Left can be undefined and Right can be null or undefined, so we test...
+  if (!!Left && !!Right) {
+    testLiteralExpression(Left, left);
+    expect(Operator).toEqual(operator);
+    testLiteralExpression(Right, right);
   }
 }
 
@@ -127,14 +127,17 @@ describe('Parser', () => {
 
         const stmt = program.Statements[0];
         testLetStatement(stmt, tt.expectedIdentifier);
+
         if (!(stmt instanceof LetStatement)) {
-          throw new Error(`${stmt} must be an instance of LetStatement`);
+          throw new Error('Expected instance of LetStatement');
         }
+
         const val = stmt.Value;
 
         if (!val) {
           throw new Error('Value must be defined');
         }
+
         testLiteralExpression(val, tt.expectedValue);
       });
     });
@@ -159,6 +162,7 @@ describe('Parser', () => {
         }
 
         const stmt = program.Statements[0];
+
         if (!(stmt instanceof ReturnStatement)) {
           throw new Error(`Expected ${stmt} to be a ReturnStatement`);
         }
@@ -188,16 +192,20 @@ describe('Parser', () => {
       }
 
       const stmt = program.Statements[0];
-      expect(stmt instanceof ExpressionStatement).toEqual(true);
 
-      if (stmt instanceof ExpressionStatement) {
-        expect(stmt.Expression instanceof Identifier);
-        if (stmt.Expression instanceof Identifier) {
-          const ident = stmt.Expression;
-          expect(ident.Value).toEqual('foobar');
-          expect(ident.TokenLiteral()).toEqual('foobar');
-        }
+      if (!(stmt instanceof ExpressionStatement)) {
+        throw new Error('Expected instance of ExpressionStatement');
       }
+
+      const exp = stmt.Expression;
+
+      if (!(exp instanceof Identifier)) {
+        throw new Error('Expected instance of Identifier');
+      }
+
+      const ident = exp;
+      expect(ident.Value).toEqual('foobar');
+      expect(ident.TokenLiteral()).toEqual('foobar');
     });
   });
 
@@ -215,16 +223,19 @@ describe('Parser', () => {
       }
 
       const stmt = program.Statements[0];
-      expect(stmt instanceof ExpressionStatement).toEqual(true);
 
-      if (stmt instanceof ExpressionStatement) {
-        expect(stmt.Expression instanceof IntegerLiteral);
-        if (stmt.Expression instanceof IntegerLiteral) {
-          const literal = stmt.Expression;
-          expect(literal.Value).toEqual(5);
-          expect(literal.TokenLiteral()).toEqual('5');
-        }
+      if (!(stmt instanceof ExpressionStatement)) {
+        throw new Error('Expected instance of ExpressionStatement');
       }
+
+      const exp = stmt.Expression;
+
+      if (!(exp instanceof IntegerLiteral)) {
+        throw new Error('Expected instance of IntegerLiteral');
+      }
+
+      expect(exp.Value).toEqual(5);
+      expect(exp.TokenLiteral()).toEqual('5');
     });
   });
 
@@ -249,18 +260,22 @@ describe('Parser', () => {
         }
 
         const stmt = program.Statements[0];
-        expect(stmt instanceof ExpressionStatement).toEqual(true);
-        if (stmt instanceof ExpressionStatement) {
-          const exp = stmt.Expression;
-          expect(exp instanceof PrefixExpression).toEqual(true);
-          if (exp instanceof PrefixExpression) {
-            expect(exp.Operator).toEqual(tt.operator);
-            expect(!!exp.Right).toBe(true);
-            // On InfixExpression, Right can be null or undefined, so we test...
-            if (exp.Right) {
-              testLiteralExpression(exp.Right, tt.value);
-            }
-          }
+
+        if (!(stmt instanceof ExpressionStatement)) {
+          throw new Error('Expected instance of ExpressionStatement');
+        }
+
+        const exp = stmt.Expression;
+
+        if (!(exp instanceof PrefixExpression)) {
+          throw new Error('Expected instance of PrefixExpression');
+        }
+
+        expect(exp.Operator).toEqual(tt.operator);
+        expect(!!exp.Right).toBe(true);
+        // On InfixExpression, Right can be null or undefined, so we test...
+        if (exp.Right) {
+          testLiteralExpression(exp.Right, tt.value);
         }
       });
     });
@@ -293,15 +308,18 @@ describe('Parser', () => {
         }
 
         const stmt = program.Statements[0];
-        expect(stmt instanceof ExpressionStatement).toEqual(true);
-        if (stmt instanceof ExpressionStatement) {
-          const exp = stmt.Expression;
-          expect(exp instanceof InfixExpression).toEqual(true);
-          if (exp instanceof InfixExpression) {
-            const { leftValue, operator, rightValue } = tt;
-            testInfixExpression(exp, leftValue, operator, rightValue);
-          }
+
+        if (!(stmt instanceof ExpressionStatement)) {
+          throw new Error('Expected instance of ExpressionStatement');
         }
+        const exp = stmt.Expression;
+
+        if (!(exp instanceof InfixExpression)) {
+          throw new Error('Expected instance of InfixExpression');
+        }
+
+        const { leftValue, operator, rightValue } = tt;
+        testInfixExpression(exp, leftValue, operator, rightValue);
       });
     });
   });
@@ -439,15 +457,19 @@ describe('Parser', () => {
         }
 
         const stmt = program.Statements[0];
-        expect(stmt instanceof ExpressionStatement).toEqual(true);
-        if (stmt instanceof ExpressionStatement) {
-          const exp = stmt.Expression;
-          expect(exp instanceof BooleanLiteral).toEqual(true);
-          if (exp instanceof BooleanLiteral) {
-            const { Value: boolean } = exp;
-            expect(boolean).toEqual(expectedBoolean);
-          }
+
+        if (!(stmt instanceof ExpressionStatement)) {
+          throw new Error('Expected instance of ExpressionStatement');
         }
+
+        const exp = stmt.Expression;
+
+        if (!(exp instanceof BooleanLiteral)) {
+          throw new Error('Expected instance of BooleanLiteral');
+        }
+
+        const { Value: boolean } = exp;
+        expect(boolean).toEqual(expectedBoolean);
       });
     });
   });
@@ -465,27 +487,43 @@ describe('Parser', () => {
       }
 
       const stmt = program.Statements[0];
-      expect(stmt instanceof ExpressionStatement).toEqual(true);
-      if (stmt instanceof ExpressionStatement) {
-        const exp = stmt.Expression;
-        expect(exp instanceof IfExpression).toEqual(true);
-        if (exp instanceof IfExpression) {
-          if (exp.Condition === undefined) { throw new Error('Condition must be initialized'); }
-          testInfixExpression(exp.Condition, 'x', '<', 'y');
-          if (exp.Consequence === undefined) { throw new Error('Consequence must be initialized'); }
-          expect(exp.Consequence.Statements.length).toEqual(1);
-          const consequence = exp.Consequence.Statements[0];
-          expect(consequence instanceof ExpressionStatement).toBe(true);
-          if (consequence instanceof ExpressionStatement) {
-            const consequenceExp = consequence.Expression;
-            expect(consequenceExp).not.toBeFalsy();
-            if (consequenceExp) {
-              testIdentifier(consequenceExp, 'x');
-            }
-          }
-          expect(exp.Alternative).toBeFalsy();
-        }
+
+      if (!(stmt instanceof ExpressionStatement)) {
+        throw new Error('Expected instance of ExpressionStatement');
       }
+
+      const exp = stmt.Expression;
+
+      if (!(exp instanceof IfExpression)) {
+        throw new Error('Expected instance of IfExpression');
+      }
+
+      const { Condition, Consequence } = exp;
+
+      if (Condition === undefined) {
+        throw new Error('Condition must be initialized');
+      }
+
+      testInfixExpression(Condition, 'x', '<', 'y');
+
+
+      if (Consequence === undefined) {
+        throw new Error('Consequence must be initialized');
+      }
+
+      expect(Consequence.Statements.length).toEqual(1);
+      const consequence = Consequence.Statements[0];
+
+      if (!(consequence instanceof ExpressionStatement)) {
+        throw new Error('Expected instance of ExpressionStatement');
+      }
+
+      const consequenceExp = consequence.Expression;
+      expect(consequenceExp).not.toBeFalsy();
+      if (consequenceExp) {
+        testIdentifier(consequenceExp, 'x');
+      }
+      expect(exp.Alternative).toBeFalsy();
     });
   });
 
@@ -502,37 +540,58 @@ describe('Parser', () => {
         throw new Error(`program.Statements does not contain 1 statement. Got ${program.Statements.length}`);
       }
       const stmt = program.Statements[0];
-      expect(stmt instanceof ExpressionStatement).toEqual(true);
-      if (stmt instanceof ExpressionStatement) {
-        const exp = stmt.Expression;
-        expect(exp instanceof IfExpression).toEqual(true);
-        if (exp instanceof IfExpression) {
-          if (exp.Condition === undefined) { throw new Error('Condition must be initialized'); }
-          testInfixExpression(exp.Condition, 'x', '<', 'y');
-          if (exp.Consequence === undefined) { throw new Error('Consequence must be initialized'); }
-          expect(exp.Consequence.Statements.length).toEqual(1);
-          const consequence = exp.Consequence.Statements[0];
-          expect(consequence instanceof ExpressionStatement).toBe(true);
-          if (consequence instanceof ExpressionStatement) {
-            const consequenceExp = consequence.Expression;
-            expect(consequenceExp).not.toBeFalsy();
-            if (consequenceExp) {
-              testIdentifier(consequenceExp, 'x');
-            }
-          }
-          expect(exp.Alternative && exp.Alternative.Statements.length === 1).toBe(true);
-          if (exp.Alternative && exp.Alternative.Statements.length === 1) {
-            const alternative = exp.Alternative.Statements[0];
-            expect(alternative instanceof ExpressionStatement).toBe(true);
-            if (alternative instanceof ExpressionStatement) {
-              const alternativeExp = alternative.Expression;
-              expect(alternativeExp).not.toBeFalsy();
-              if (alternativeExp) {
-                testIdentifier(alternativeExp, 'y');
-              }
-            }
-          }
-        }
+
+      if (!(stmt instanceof ExpressionStatement)) {
+        throw new Error('Expected instance of ExpressionStatement');
+      }
+
+      const exp = stmt.Expression;
+
+      if (!(exp instanceof IfExpression)) {
+        throw new Error('Expected instance of IfExpression');
+      }
+
+      const { Condition, Consequence } = exp;
+
+      if (Condition === undefined) {
+        throw new Error('Condition must be initialized');
+      }
+
+      testInfixExpression(Condition, 'x', '<', 'y');
+
+      if (Consequence === undefined) {
+        throw new Error('Consequence must be initialized');
+      }
+
+      expect(Consequence.Statements.length).toEqual(1);
+      const consequence = Consequence.Statements[0];
+
+      if (!(consequence instanceof ExpressionStatement)) {
+        throw new Error('Expected instance of ExpressionStatement');
+      }
+
+      const consequenceExp = consequence.Expression;
+      expect(consequenceExp).not.toBeFalsy();
+      if (consequenceExp) {
+        testIdentifier(consequenceExp, 'x');
+      }
+
+      const { Alternative } = exp;
+
+      if (!(Alternative && Alternative.Statements.length === 1)) {
+        throw new Error('Expected Alternative.Statements.length to equal 1');
+      }
+
+      const alternative = Alternative.Statements[0];
+
+      if (!(alternative instanceof ExpressionStatement)) {
+        throw new Error('Expected instance of ExpressionStatment');
+      }
+
+      const alternativeExp = alternative.Expression;
+      expect(alternativeExp).not.toBeFalsy();
+      if (alternativeExp) {
+        testIdentifier(alternativeExp, 'y');
       }
     });
   });
@@ -553,6 +612,7 @@ describe('Parser', () => {
         throw new Error(`${stmt} is not an ExpressionStatement`);
       }
       const func = stmt.Expression;
+
       expect(func instanceof FunctionLiteral).toBe(true);
       if (func instanceof FunctionLiteral) {
         if (!func.Parameters) { throw new Error('Parameters must not be null or undefined'); }
